@@ -1,0 +1,17 @@
+/* ----------------------------------------------
+   base.css – couleurs et reset de base
+------------------------------------------------- */
+
+:root {
+    --color-bg: #f6f1ec;
+    --color-text: #3b2c26;
+}
+
+body {
+    font-family: Georgia, serif;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+}

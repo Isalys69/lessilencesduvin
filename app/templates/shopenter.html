@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <title>Boutique – Les Silences du Vin</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- CSS communs -->
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/typography.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/shopenter.css') }}">
+    </head>
+    <body>
+        <header class="top-header">
+            <!-- BOUTON BURGER (caché sur grand écran) -->
+            <button class="burger-btn" id="burgerBtn" aria-label="Ouvrir le menu">&#9776;</button>
+            <a href="{{ url_for('authentication') }}" class="btn-auth">Connexion / Créer un compte</a>
+        </header>
+        <div class="boutique-layout">
+            <!-- MENU LATERAL -->
+            <nav class="sidebar-menu" id="sidebarMenu">
+                <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+                <ul>
+                    <li><a href="#">Tous les vins</a></li>
+                    <li><a href="#">Rouges</a></li>
+                    <li><a href="#">Blancs</a></li>
+                    <li><a href="#">Rosés</a></li>
+                    <li><a href="#">Effervescents</a></li>
+                    
+                    <li><a href="{{ url_for('shoppingbasket') }}">Panier</a></li>
+                    <li><a href="{{ url_for('payment') }}">Paiement</a></li>
+                        
+                    <!-- Ajoute tes filtres/catégories -->
+                </ul>
+            </nav>
+
+            <!-- CONTENU PRINCIPAL -->
+            <main class="boutique-main">
+                <section class="boutique-hero">
+                    <h1>La boutique</h1>
+                    <p>Explorez notre sélection de vins confidentiels, choisis pour l’émotion qu’ils éveillent.</p>
+                </section>
+                <section class="product-list">
+                    {% for vin in vins %}
+                    <div class="product-card">
+                        <img src="{{ url_for('static', filename='img/vins/' ~ vin.image) }}"
+                             alt="Bouteille de {{ vin.nom }}" class="product-img">
+                        <h2 class="product-title">{{ vin.nom }}</h2>
+                        <p class="product-desc">{{ vin.description_courte }}</p>
+                        <p class="product-price">{{ vin.prix|format_currency }} €</p>
+                        <a href="{{ url_for('fiche_produit', produit_id=vin.id) }}" class="btn-boutique">Voir la fiche</a>
+                    </div>
+                    {% endfor %}
+                </section>
+            </main>
+        </div>
+        <!-- Scripts communs -->
+        <script src="{{ url_for('static', filename='js/menu.js') }}"></script>
+
+    </body>
+</html>

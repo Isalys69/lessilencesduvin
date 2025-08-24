@@ -1,0 +1,66 @@
+/* Grille responsive pour la liste des vins */
+.product-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2.2rem;
+    justify-content: center;
+    margin-top: 2.5rem;
+}
+.product-card {
+    background: #fff;
+    border: 1.2px solid #eee3d4;
+    border-radius: 18px;
+    box-shadow: 0 3px 14px #bba68e11;
+    width: 290px;
+    padding: 1.5rem 1.1rem 2rem 1.1rem;
+    text-align: center;
+    transition: box-shadow 0.2s;
+}
+.product-card:hover {
+    box-shadow: 0 6px 24px #bba68e29;
+}
+.product-img {
+    width: 100px;
+    height: auto;
+    margin-bottom: 1rem;
+}
+.product-title {
+    font-size: 1.13rem;
+    font-weight: 600;
+    margin: 0.7em 0 0.2em 0;
+}
+.product-desc {
+    font-size: 1em;
+    color: #87725c;
+    margin-bottom: 1.3em;
+}
+.product-price {
+    font-size: 1.12em;
+    font-weight: bold;
+    color: #4b3522;
+    margin-bottom: 1.1em;
+}
+.btn-boutique {
+    background: #ede4da;
+    color: #3b2c26;
+    border-radius: 14px;
+    padding: 0.6em 1.5em;
+    font-size: 1em;
+    text-decoration: none;
+    font-weight: 500;
+    transition: background 0.2s;
+}
+.btn-boutique:hover {
+    background: #e2d3be;
+}
+@media (max-width: 700px) {
+    .product-list {
+        flex-direction: column;
+        gap: 1.2rem;
+        align-items: center;
+    }
+    .product-card {
+        width: 97vw;
+        max-width: 390px;
+    }
+}

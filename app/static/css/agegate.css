@@ -1,0 +1,64 @@
+/* --- Style général du body --- */
+body {
+    background: #f7f5f2; /* Fond très clair, feutré */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-family: 'Georgia', serif;
+    color: #262626;
+}
+
+/* --- Logo centré en haut --- */
+.logo {
+    margin-bottom: 2em;
+    max-width: 150px; /* Ajuste selon ta préférence */
+}
+
+/* --- Carte centrale (bloc blanc) --- */
+.card {
+    background: #fff;
+    padding: 2em 2.5em;
+    border-radius: 18px; /* Coins arrondis */
+    box-shadow: 0 4px 24px rgba(80, 80, 80, 0.05); /* Légère ombre portée */
+    text-align: center;
+}
+
+/* --- Wording principal, style italique --- */
+.subtitle {
+    margin-bottom: 1.5em;
+    font-size: 1.15em;
+    line-height: 1.6;
+    font-style: italic;
+}
+
+/* --- Texte légal discret --- */
+.small {
+    font-size: 0.95em;
+    margin-top: 2em;
+    color: #8b8b8b; /* Gris atténué */
+}
+
+/* --- Champ date de naissance --- */
+input[type="date"] {
+    padding: 0.4em 1em;
+    border-radius: 7px;
+    border: 1px solid #e0e0e0;
+    margin-bottom: 1.2em;
+    font-size: 1em;
+}
+
+/* --- Bouton valider --- */
+button {
+    background: #2e2d29;   /* Noir doux, rappel cave */
+    color: #fff;
+    border: none;
+    border-radius: 9px;
+    padding: 0.6em 2em;
+    font-size: 1.1em;
+    cursor: pointer;
+}
+button:active {
+    background: #383532;
+}

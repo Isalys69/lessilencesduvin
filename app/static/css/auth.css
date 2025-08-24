@@ -1,0 +1,69 @@
+/* ----------------------------------------------
+   auth.css – styles de la page authentification
+   Responsive, lisible, pédagogique
+------------------------------------------------- */
+
+/* Conteneur des deux blocs (connexion / inscription) */
+.auth-container {
+    display: flex;                 /* Affiche les blocs côte à côte (desktop) */
+    gap: 3rem;                     /* Espace horizontal entre les deux blocs */
+    justify-content: center;       /* Centre l'ensemble horizontalement */
+    align-items: flex-start;       /* Aligne les blocs en haut */
+    margin: 5vh auto;
+    flex-wrap: wrap;               /* Permet de passer en colonne si l’écran est étroit */
+}
+
+/* Bloc individuel (connexion ou inscription) */
+.auth-block {
+    background: #fff;              /* Fond blanc pour le contraste */
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 2rem 1.5rem;
+    max-width: 350px;
+    width: 100%;
+    box-shadow: 0 4px 18px #0002;  /* Légère ombre */
+}
+
+.auth-block h2 {
+    margin-bottom: 1rem;
+    font-size: 1.4rem;
+}
+
+/* Styles pour les champs de formulaire et boutons */
+.auth-block input,
+.auth-block button {
+    display: block;
+    width: 100%;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    padding: 0.7em;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+}
+
+/* Bouton stylé */
+.auth-block button {
+    background: #3b2c26;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+/* Effet au survol */
+.auth-block button:hover {
+    background: #6c4f31;
+}
+
+/* Responsive mobile/tablette */
+@media (max-width: 800px) {
+    .auth-container {
+        flex-direction: column;    /* Les blocs passent l’un sous l’autre */
+        gap: 2rem;
+        align-items: stretch;
+    }
+    .auth-block {
+        margin: 0 auto;
+    }
+}

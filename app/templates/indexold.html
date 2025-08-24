@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Les Silences du Vin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/typography.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
+</head>
+<body>
+    <div class="content">
+        <section class="hero">
+            <h1><span class="nowrap">Les Silences du Vin</span></h1>
+            <p>Un lieu où chaque bouteille attend d’être écoutée.</p>
+        </section>
+        <footer>
+            <p>L’abus d’alcool est dangereux pour la santé. À consommer avec modération.</p>
+            <p>
+                <a href="{{ url_for('mentions_legales') }}">Mentions légales</a> |
+                <a href="{{ url_for('cgv') }}">CGV</a>
+            </p>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!-- authentication.html : page pour connexion et création de compte -->
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <title>Authentification – Les Silences du Vin</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- On réutilise tes CSS existants pour l’aspect général -->
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/typography.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
+        <!-- Et on ajoute un CSS spécifique pour cette page -->
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+    </head>
+    <body>
+        <div class="content">
+            <!-- Bloc global contenant les deux formulaires -->
+            <section class="auth-container">
+                <!-- Bloc Connexion (déjà client) -->
+                <div class="auth-block">
+                    <h2>Connexion</h2>
+                    <form method="post" action="/login">
+                        <!-- Champ e-mail -->
+                        <input type="email" name="email" placeholder="Adresse e-mail" required>
+                        <!-- Champ mot de passe -->
+                        <input type="password" name="password" placeholder="Mot de passe" required>
+                        <!-- Bouton de connexion -->
+                        <button type="submit">Se connecter</button>
+                    </form>
+                </div>
+                <!-- Bloc Création de compte (nouveau client) -->
+                <div class="auth-block">
+                    <h2>Créer un compte</h2>
+                    <form method="post" action="/signup">
+                        <!-- Champ nom -->
+                        <input type="text" name="name" placeholder="Nom" required>
+                        <!-- Champ e-mail -->
+                        <input type="email" name="email" placeholder="Adresse e-mail" required>
+                        <!-- Champ mot de passe -->
+                        <input type="password" name="password" placeholder="Créer un mot de passe" required>
+                        <!-- Bouton de création de compte -->
+                        <button type="submit">Créer mon compte</button>
+                    </form>
+                </div>
+            </section>
+            <!-- Pied de page avec liens légaux, réutilisé partout -->
+            <footer>
+                <p>L’abus d’alcool est dangereux pour la santé. À consommer avec modération.</p>
+                <p>
+                    <a href="{{ url_for('mentions_legales') }}">Mentions légales</a> |
+                    <a href="{{ url_for('cgv') }}">CGV</a>
+                </p>
+            </footer>
+        </div>
+    </body>
+</html>

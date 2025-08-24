@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Vérification d’âge – Les Silences du Vin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/agegate.css') }}">
+</head>
+<body>
+
+    <!-- Conteneur central -->
+    <div class="age-gate">
+        <h1>Bienvenue sur Les Silences du Vin</h1>
+        <p>Ce site est réservé aux personnes majeures. Merci de confirmer votre âge.</p>
+
+        <!-- Forme simplifiée : checkbox + bouton -->
+        <label>
+            <input type="checkbox" id="confirmAge">
+            Je certifie avoir plus de 18 ans
+        </label>
+
+        <a href="{{ url_for('agegate_valide') }}" id="enterBtn" class="button disabled">Entrer</a>
+
+        <!-- Lien vers la politique de confidentialité -->
+        <p class="conf-link">
+            <a href="{{ url_for('confidentialite') }}">Voir notre politique de confidentialité</a>
+        </p>
+    </div>
+
+    <!-- JavaScript externe -->
+    <script src="{{ url_for('static', filename='js/agegate.js') }}"></script>
+
+</body>
+</html>

@@ -1,0 +1,101 @@
+/* ----------------------------------------------
+   layout.css – structure responsive universelle
+------------------------------------------------- */
+
+/* Conteneur principal */
+.content {
+    width: 100%;
+    max-width: 1000px;             /* Desktop/Tablette : largeur centrale */
+    margin: 0 auto;
+    padding: 10vh 5vw;
+    box-sizing: border-box;
+    background: none;              /* Pour faciliter l’ajout d’un fond sur .full-width */
+}
+
+/* Pleine largeur visuelle pour une section immersive */
+.full-width {
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+    max-width: 100vw;
+}
+
+/* Hero section centrée et verticale */
+.hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    min-height: 40vh;
+    margin-bottom: 3vh;
+    padding: 0 1rem;
+    text-align: center;
+}
+
+/* Pied de page responsive */
+footer {
+    margin-top: 8vh;
+    font-size: 0.95rem;
+    color: #5c4c45;
+    padding: 2rem 1rem 0 1rem;
+    text-align: center;
+}
+
+footer a {
+    text-decoration: none;
+    color: inherit;
+    margin: 0 0.5rem;
+    display: inline-block;
+}
+
+/* ----- Responsive mobile/tablette ----- */
+@media (max-width: 600px) {
+    .content {
+        max-width: 100vw;
+        padding: 4vh 0.5rem;
+    }
+    .hero {
+        padding: 0 0.5rem;
+        min-height: 30vh;
+    }
+    footer {
+        font-size: 0.9rem;
+        padding: 1rem 0.5rem 0 0.5rem;
+    }
+}
+
+
+/* ----------------------------------------------
+   En-tête supérieur avec bouton d’authentification
+------------------------------------------------- */
+.top-header {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 1.5em 1.2em 0 1.2em;
+    box-sizing: border-box;
+}
+.btn-auth {
+    display: inline-block;
+    padding: 0.6em 1.6em;
+    background: #ede4da;
+    color: #3b2c26;
+    border-radius: 3px;
+    font-size: 1.02em;
+    text-decoration: none;
+    font-weight: 500;
+    transition: background 0.2s;
+    box-shadow: 0 2px 6px #0001;
+}
+.btn-auth:hover {
+    background: #e2d3be;
+}
+
+

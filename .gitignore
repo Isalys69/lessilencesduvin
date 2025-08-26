@@ -1,6 +1,18 @@
 # Fichiers système macOS
 .DS_Store
 
-# Fichiers modèles
-/app/templates/cgv-complete.html
-/app/templates/politique_confidentialite.html
+# Caches Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtualenv
+venv/
+ENV/
+env/
+*.env
+
+# Fichiers modèles (non destinés à la prod V1)
+app/templates/cgv-complete.html
+app/templates/politique_confidentialite.html

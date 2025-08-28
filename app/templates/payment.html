@@ -1,12 +1,26 @@
 <!-- templates/shoppingbasket.html -->
 <!DOCTYPE html>
 <html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <title>Paiement</title>
-</head>
-<body>
-    <h1>Paiement</h1>
-    <p>À compléter</p>
-</body>
+    <head>
+        <meta charset="UTF-8">
+        <title>Paiement</title>
+    </head>
+
+    <body>
+        <h1>Paiement</h1>
+        <p>Total (exemple) : 20,00 €</p>
+
+        <button id="pay-btn">Payer avec Stripe (sandbox)</button>
+
+        <script>
+            document.getElementById('pay-btn').addEventListener('click', async () => {
+                const res = await fetch('/create-checkout-session', { method: 'POST' });
+                const data = await res.json();
+                if (data.url) {
+                    window.location = data.url;} // redirige vers Stripe Checkout
+                else {
+                    alert('Erreur paiement : ' + (data.error || 'inconnue'));}
+            });
+        </script>
+    </body>
 </html>

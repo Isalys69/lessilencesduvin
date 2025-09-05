@@ -36,11 +36,13 @@ def shopenter():
 def shoppingbasket():
     return render_template('shoppingbasket.html')
 
+
+'''
 # Route vers le paiement
 @app.route("/payment")
 def payment():
     return render_template('payment.html')
-
+'''
 
 # Route d'identification client connu
 @app.route("/signup", methods=["POST"])
@@ -107,26 +109,34 @@ def cgv():
 
 @app.route("/create-checkout-session", methods=["POST"])
 def create_checkout_session():
-    # Garde-fou minimal
     if not stripe.api_key or not stripe.api_key.startswith("sk_"):
         return jsonify({"error": "Stripe non configuré"}), 500
 
+    # Construire line_items depuis le panier en session (côté serveur)
+    cart = get_cart()
+    items, total = cart_totals(cart)
+    if total == 0 or not items:
+        return jsonify({"error": "Panier vide"}), 400  # V1: message simple
+
+    line_items = []
+    for it in items:
+        line_items.append({
+            "price_data": {
+                "currency": "eur",
+                "product_data": {"name": it["name"]},
+                "unit_amount": it["unit_amount"],
+            },
+            "quantity": it["qty"],
+        })
+
     try:
-        session = stripe.checkout.Session.create(
+        session_obj = stripe.checkout.Session.create(
             mode="payment",
             success_url = url_for("success", _external=True) + "?session_id={CHECKOUT_SESSION_ID}",
             cancel_url  = url_for("cancel",  _external=True),
-            line_items=[{
-                "price_data": {
-                    "currency": "eur",
-                    "product_data": {"name": "Commande Les Silences du Vin"},
-                    "unit_amount": 2000  # 20,00 € (en centimes)
-                },
-                "quantity": 1
-            }],
+            line_items = line_items,
         )
-        return jsonify({"url": session.url}), 200
-
+        return jsonify({"url": session_obj.url}), 200
     except Exception as e:
         current_app.logger.exception("Erreur Stripe Checkout")
         return jsonify({"error": str(e)}), 400
@@ -146,7 +156,74 @@ def success():
     return render_template("cancel.html", title="Paiement non confirmé"), 400
 
 
+
 @app.route("/paiement/cancel")
 def cancel():
+    session["cart"] = {}   # vider explicitement le panier
     return render_template("cancel.html", title="Paiement annulé")
 
+
+# --- V1 : petit catalogue en dur (prices en centimes)
+CATALOGUE = {
+    "VIN-001": {"name": "Rouge de Loire 2019", "price": 1500},  # 15,00 €
+    "VIN-002": {"name": "Bourgogne Blanc 2020", "price": 2200},  # 22,00 €
+}
+
+def get_cart():
+    """Récupère le panier depuis la session (dict sku -> qty)."""
+    if "cart" not in session:
+        session["cart"] = {}
+    return session["cart"]
+
+def cart_totals(cart):
+    """Calcule le total en centimes et prépare les lignes pour l'affichage."""
+    items = []
+    total = 0
+    for sku, qty in cart.items():
+        if sku in CATALOGUE and qty > 0:
+            name = CATALOGUE[sku]["name"]
+            unit_amount = CATALOGUE[sku]["price"]
+            line_total = unit_amount * qty
+            items.append({
+                "sku": sku,
+                "name": name,
+                "qty": qty,
+                "unit_amount": unit_amount,
+                "line_total": line_total,
+            })
+            total += line_total
+    return items, total
+
+@app.route("/panier", methods=["GET"])
+def panier():
+    cart = get_cart()
+    # session["cart"] = cart
+    session["cart"] = {}   # vider explicitement le panier
+    items, total = cart_totals(cart)
+    return render_template("shoppingbasket.html", items=items, total=total)
+
+@app.route("/panier/ajouter/<sku>", methods=["POST"])
+def panier_ajouter(sku):
+    if sku not in CATALOGUE:
+        abort(400, "Référence inconnue")
+    cart = get_cart()
+    cart[sku] = cart.get(sku, 0) + 1
+    session["cart"] = cart  # marquer la session modifiée
+    return redirect(url_for("panier"))
+
+
+
+@app.route("/panier/retirer/<sku>", methods=["POST"])
+def panier_retirer(sku):
+    cart = get_cart()
+    if sku in cart:
+        cart[sku] = max(0, cart.get(sku, 0) - 1)
+        if cart[sku] == 0:
+            cart.pop(sku)
+        session["cart"] = cart
+    return redirect(url_for("panier"))
+
+@app.route("/panier/vider", methods=["POST"])
+def panier_vider():
+    session["cart"] = {}
+    return redirect(url_for("panier"))

@@ -1,0 +1,31 @@
+/* G0R4 — Correctifs responsive minimum */
+
+/* Pas de zoom obligatoire */
+meta[name="viewport"] {
+  content: "width=device-width, initial-scale=1.0";
+}
+
+/* Images qui ne débordent jamais */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Conteneur qui empêche le scroll horizontal */
+body, html {
+  max-width: 100%;
+  overflow-x: hidden;
+  font-size: 16px; /* taille mini pour lisibilité */
+}
+
+/* Boutons cliquables sans viser au pixel */
+button, .btn {
+  min-height: 44px;
+  padding: 0.5rem 1rem;
+}
+
+/* Menu/nav = largeur pleine et empilé si besoin */
+nav, .header, .sidebar-menu {
+  width: 100%;
+  display: block;
+}

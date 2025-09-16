@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Catalogue</title>
+</head>
+
+<body>
+    <h1>Catalogue des vins</h1>
+    <ul>
+        {% for vin in vins %}
+            <li>
+                {{ vin['nom'] }} ({{ vin['millesime'] }}) – 
+                {{ "%.2f"|format(vin['prix']) }} € – 
+                Accord : {{ vin['accord'] }}
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

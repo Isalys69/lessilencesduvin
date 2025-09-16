@@ -13,6 +13,10 @@ ENV/
 env/
 *.env
 
+# Instance Flask et base de données
+instance/
+*.db
+
 # Fichiers modèles (non destinés à la prod V1)
 app/templates/cgv-complete.html
 app/templates/politique_confidentialite.html

@@ -20,3 +20,10 @@ instance/
 # Fichiers modèles (non destinés à la prod V1)
 app/templates/cgv-complete.html
 app/templates/politique_confidentialite.html
+
+
+# Fichiers de travail perso (non versionnés)
+app/new_initdb.py
+app/old__init__.py
+app/old_routes.py
+old-initdb.py

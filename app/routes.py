@@ -12,3 +12,12 @@ def catalogue():
     vins = conn.execute("SELECT * FROM vins").fetchall()
     conn.close()
     return render_template("catalogue.html", vins=vins)
+
+@bp.route('/shoppingbasket', methods=['GET', 'POST'])
+def shoppingbasket():
+    return render_template("shoppingbasket.html")
+
+
+@bp.route('/shopenter', methods=['GET', 'POST'])
+def shopenter():
+    return render_template("shopenter.html")

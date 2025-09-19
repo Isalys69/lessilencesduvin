@@ -12,25 +12,17 @@
     <ul>
         {% for vin in vins %}
             <li>
-                {{ vin['nom'] }} ({{ vin['millesime'] }}) – 
-                {{ "%.2f"|format(vin['prix']) }} € – 
-                Accord : {{ vin['accord'] }}
-            </li>
-        {% endfor %}
-    </ul>
-    <p>
-        <h2>Nos vins</h2>
-        <ul>
-            {% for vin in vins %}
-            <li>
                 <h3>{{ vin.nom }}</h3>
                 <img src=" {{ vin.image }}" width="50">
                 Domaine : {{ vin.domaine }} <br>
                 Millésime : {{ vin.millesime }}<br>
                 Prix : {{ vin.prix }} € <br>
+                <form action="{{ url_for('routes.shoppingbasket') }}" method="POST">
+                    <input type="hidden" name="vin_id" value="{{ vin.id }}"/>
+                    <button type="submit">Ajouter au panier</button>
+                </form>
             </li>                
-            {% endfor %}
-        </ul>
-    </p>
+        {% endfor %}
+    </ul>
 </body>
 </html>

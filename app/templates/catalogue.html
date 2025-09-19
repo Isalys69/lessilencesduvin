@@ -19,10 +19,15 @@
         {% endfor %}
     </ul>
     <p>
-        <h2>Noms des vins</h2>
+        <h2>Nos vins</h2>
         <ul>
             {% for vin in vins %}
+            <li>
                 <h3>{{ vin.nom }}</h3>
+                Domaine : {{ vin.domaine }} <br>
+                Millésime : {{ vin.millesime }}<br>
+                Prix : {{ vin.prix }} € <br>
+            </li>                
             {% endfor %}
         </ul>
     </p>

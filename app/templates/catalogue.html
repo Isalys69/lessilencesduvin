@@ -18,5 +18,13 @@
             </li>
         {% endfor %}
     </ul>
+    <p>
+        <h2>Noms des vins</h2>
+        <ul>
+            {% for vin in vins %}
+                <h3>{{ vin.nom }}</h3>
+            {% endfor %}
+        </ul>
+    </p>
 </body>
 </html>

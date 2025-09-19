@@ -24,6 +24,7 @@
             {% for vin in vins %}
             <li>
                 <h3>{{ vin.nom }}</h3>
+                <img src=" {{ vin.image }}" width="50">
                 Domaine : {{ vin.domaine }} <br>
                 Millésime : {{ vin.millesime }}<br>
                 Prix : {{ vin.prix }} € <br>

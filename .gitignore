@@ -26,5 +26,5 @@ app/templates/politique_confidentialite.html
 app/new_initdb.py
 app/old__init__.py
 app/old_routes.py
-app/templates/old.shoppingbasket.htm
+app/templates/old.shoppingbasket.html
 old-initdb.py

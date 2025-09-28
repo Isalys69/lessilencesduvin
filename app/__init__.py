@@ -16,6 +16,7 @@ def close_db(e=None):
 
 def create_app():
     app = Flask(__name__, instance_relative_config=True)
+    app.secret_key = "s7Df@9z!j2Lp%YqT0vWx3eKuR6BnMh"  # ✅ ajoute la clé ici
     app.teardown_appcontext(close_db)
 
     # Import et enregistrement du blueprint

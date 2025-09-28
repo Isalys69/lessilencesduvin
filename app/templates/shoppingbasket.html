@@ -1,83 +1,22 @@
-<!DOCTYPE html>
+<table>
+  <thead>
+    <tr>
+      <th>Vin</th>
+      <th>Prix unitaire</th>
+      <th>Quantité</th>
+      <th>Sous-total</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for line in items %}
+    <tr>
+      <td>{{ line.nom }}</td>
+      <td>{{ "%.2f"|format(line.prix) }} €</td>
+      <td>{{ line.qty }}</td>
+      <td>{{ "%.2f"|format(line.line_total) }} €</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
 
-<html lang="fr">
-
-    <head>
-        <meta charset="UTF-8">
-        <title>Panier</title>
-    </head>
-
-    <body>
-        <h1>Panier</h1>
-        <h2>Catalogue (ajout rapide V1)</h2>
-        <form method="post" action="/panier/ajouter/VIN-001" style="display:inline">
-            <button type="submit">+ Rouge de Loire 2019 (15,00 €)</button>
-        </form>
-        <form method="post" action="/panier/ajouter/VIN-002" style="display:inline">
-            <button type="submit">+ Bourgogne Blanc 2020 (22,00 €)</button>
-        </form>
-        <hr>
-
-        <h2>Votre sélection</h2>
-        {% if items and items|length > 0 %}
-        <table border="1" cellpadding="6">
-            <thead>
-                <tr>
-                    <th>Produit</th>
-                    <th>Qté</th>
-                    <th>Prix unitaire (€)</th>
-                    <th>Total (€)</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for it in items %}
-                <tr>
-                    <td>{{ it.name }}</td>
-                    <td>{{ it.qty }}</td>
-                    <td>{{ '%.2f' % (it.unit_amount / 100) }}</td>
-                    <td>{{ '%.2f' % (it.line_total / 100) }}</td>
-                    <td>
-                        <form method="post" action="/panier/ajouter/{{ it.sku }}" style="display:inline">
-                            <button type="submit">+1</button>
-                        </form>
-                        <form method="post" action="/panier/retirer/{{ it.sku }}" style="display:inline">
-                            <button type="submit">-1</button>
-                        </form>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-
-        <p><strong>Total :</strong> {{ '%.2f' % (total / 100) }} €</p>
-
-        <form method="post" action="/panier/vider" style="display:inline">
-            <button type="submit">Vider le panier</button>
-        </form>
-
-        <!-- Paiement : redirection vers Stripe Checkout -->
-        <button id="pay-btn">Payer avec Stripe (sandbox)</button>
-        <script>
-            document.getElementById('pay-btn').addEventListener('click', async () => {
-            const res = await fetch('/create-checkout-session', { method: 'POST' });
-            const data = await res.json();
-            if (data.url) {
-                window.location = data.url;} 
-            else {
-                alert('Erreur paiement : ' + (data.error || 'inconnue'));}
-            });
-        </script>
-
-        {% else %}
-        <p>Votre panier est vide.</p>
-        {% endif %}
-
-        
-        {# <p><a href="{{ url_for('routes.payment') }}">Aller à la page Paiement</a></p> #}
-        
-        <p><a href="{{ url_for('routes.shopenter') }}">Retour à l’accueil</a></p>
-        <p><em>⚠️ Attention : si vous revenez à l’accueil, votre panier pourra être réinitialisé.</em></p>
-
-    </body>
-</html>
+<h3>Total : {{ "%.2f"|format(total) }} €</h3>

@@ -34,7 +34,7 @@ def shoppingbasket():
             session.modified = True
         return redirect(url_for("routes.shoppingbasket"))
 
-    # --- GET : afficher le panier ---
+    # --- GET : Reconstituer le panier ---
     cart = session.get("cart", {})
     items = []
     total = 0.0
@@ -85,7 +85,64 @@ def update_cart():
 
     return redirect(url_for("routes.shoppingbasket"))
 
-
 @bp.route('/shopenter', methods=['GET', 'POST'])
 def shopenter():
     return render_template("shopenter.html")
+
+
+@bp.route("/checkout", methods=["POST"])
+def checkout():
+    db_path = Path("instance/vins.db")
+    cart = session.get("cart", {})
+
+    if not cart:
+        return redirect(url_for("routes.shoppingbasket"))
+
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    # --- Reconstituer le panier ---
+    cart = session.get("cart", {})
+    items = []
+    total = 0.0
+
+    for vin_id_str, qty in cart.items():
+        cursor.execute("SELECT id, nom, prix FROM vins WHERE id = ?", (vin_id_str,))
+        row = cursor.fetchone()
+        if row:
+            vin_id, nom, prix = row
+            line_total = prix * qty
+            items.append({
+                "id": vin_id,
+                "nom": nom,
+                "prix": prix,
+                "qty": qty,
+                "line_total": line_total
+            })
+            total += line_total
+
+
+    cursor.execute(
+        "INSERT INTO orders (date, total, statut, client_id) VALUES (DATE('now'), ?, 'En attente', NULL)",
+        (total,)
+    )   
+
+    order_id = cursor.lastrowid   # on récupère l'id auto-incrémenté
+
+    # ---Créer les lignes de commande---
+    for line in items:
+        cursor.execute(
+            "INSERT INTO order_lines (order_id, vin_id, qty, unit_price) VALUES (?, ?, ?, ?)",
+            (order_id, line["id"], line["qty"], line["prix"])
+        )
+
+    conn.commit()
+    conn.close()
+
+    # --- Vider le panier créé ---
+    session["cart"] = {}
+    session.modified = True
+
+    return "Commande sauvegardée"
+
+

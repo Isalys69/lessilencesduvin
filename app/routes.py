@@ -101,13 +101,11 @@ def checkout():
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
-    # --- Reconstituer le panier ---
-    cart = session.get("cart", {})
+    # 1) Reconstituer le panier depuis la session
     items = []
     total = 0.0
-
-    for vin_id_str, qty in cart.items():
-        cursor.execute("SELECT id, nom, prix FROM vins WHERE id = ?", (vin_id_str,))
+    for vin_id, qty in cart.items():
+        cursor.execute("SELECT id, nom, prix FROM vins WHERE id=?", (vin_id,))
         row = cursor.fetchone()
         if row:
             vin_id, nom, prix = row
@@ -121,15 +119,14 @@ def checkout():
             })
             total += line_total
 
-
+    # 2) Créer une commande dans "orders"
     cursor.execute(
         "INSERT INTO orders (date, total, statut, client_id) VALUES (DATE('now'), ?, 'En attente', NULL)",
         (total,)
-    )   
+    )
+    order_id = cursor.lastrowid
 
-    order_id = cursor.lastrowid   # on récupère l'id auto-incrémenté
-
-    # ---Créer les lignes de commande---
+    # 3) Créer les lignes de commande dans "order_lines"
     for line in items:
         cursor.execute(
             "INSERT INTO order_lines (order_id, vin_id, qty, unit_price) VALUES (?, ?, ?, ?)",
@@ -137,12 +134,32 @@ def checkout():
         )
 
     conn.commit()
+
+    # 4) Charger la commande + lignes pour affichage
+    cursor.execute("SELECT id, date, total, statut FROM orders WHERE id=?", (order_id,))
+    order_row = cursor.fetchone()
+    order = {
+        "id": order_row[0],
+        "date": order_row[1],
+        "total": order_row[2],
+        "statut": order_row[3]
+    }
+
+    cursor.execute("""
+        SELECT v.nom, ol.qty, ol.unit_price
+        FROM order_lines ol
+        JOIN vins v ON ol.vin_id = v.id
+        WHERE ol.order_id=?
+    """, (order_id,))
+    order_lines = [{"nom": r[0], "qty": r[1], "unit_price": r[2]} for r in cursor.fetchall()]
+
     conn.close()
 
-    # --- Vider le panier créé ---
+    # 5) Vider le panier
     session["cart"] = {}
     session.modified = True
 
-    return "Commande sauvegardée"
+    # 6) Afficher la page de confirmation
+    return render_template("checkout.html", order=order, order_lines=order_lines)
 
 

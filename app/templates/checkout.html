@@ -1,0 +1,43 @@
+<!doctype html>
+
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <title>Confirmation commande</title>
+  </head>
+
+  <body>
+    <h1>Commande sauvegardée ✅</h1>
+
+    <p>Merci pour votre commande !</p>
+
+    <p><strong>Numéro de commande :</strong> {{ order.id }}</p>
+    <p><strong>Date :</strong> {{ order.date }}</p>
+    <p><strong>Total :</strong> {{ "%.2f"|format(order.total) }} €</p>
+    <p><strong>Statut :</strong> {{ order.statut }}</p>
+
+    <h2>Détails de la commande :</h2>
+    <table border="1" cellpadding="5" cellspacing="0">
+      <thead>
+        <tr>
+          <th>Vin</th>
+          <th>Quantité</th>
+          <th>Prix unitaire</th>
+          <th>Sous-total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for line in order_lines %}
+          <tr>
+            <td>{{ line.nom }}</td>
+            <td>{{ line.qty }}</td>
+            <td>{{ "%.2f"|format(line.unit_price) }} €</td>
+            <td>{{ "%.2f"|format(line.qty * line.unit_price) }} €</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <p><a href="{{ url_for('routes.catalogue') }}">← Retour au catalogue</a></p>
+  </body>
+</html>

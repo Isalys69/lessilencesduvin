@@ -61,6 +61,31 @@ def shoppingbasket():
 
     return render_template("shoppingbasket.html", items=items, total=total)
 
+
+@bp.route("/update_cart", methods=["POST"])
+def update_cart():
+    vin_id = request.form.get("vin_id")
+    action = request.form.get("action")
+
+    cart = session.get("cart", {})
+
+    if vin_id:
+        if action == "remove":
+            cart.pop(vin_id, None)
+        elif action == "increase":
+            cart[vin_id] = cart.get(vin_id, 0) + 1
+        elif action == "decrease":
+            if cart.get(vin_id, 0) <= 1:
+                cart.pop(vin_id, None)
+            else:
+                cart[vin_id] -= 1
+
+        session["cart"] = cart
+        session.modified = True
+
+    return redirect(url_for("routes.shoppingbasket"))
+
+
 @bp.route('/shopenter', methods=['GET', 'POST'])
 def shopenter():
     return render_template("shopenter.html")

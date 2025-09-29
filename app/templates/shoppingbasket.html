@@ -1,22 +1,54 @@
-<table>
-  <thead>
-    <tr>
-      <th>Vin</th>
-      <th>Prix unitaire</th>
-      <th>Quantité</th>
-      <th>Sous-total</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for line in items %}
-    <tr>
-      <td>{{ line.nom }}</td>
-      <td>{{ "%.2f"|format(line.prix) }} €</td>
-      <td>{{ line.qty }}</td>
-      <td>{{ "%.2f"|format(line.line_total) }} €</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+<!DOCTYPE html>
 
-<h3>Total : {{ "%.2f"|format(total) }} €</h3>
+<html lang="fr">
+
+    <head>
+        <meta charset="UTF-8">
+        <title>Panier</title>
+    </head>
+
+    <body>
+        <h1>votre panier des vins</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>Vin</th>
+                    <th>Prix unitaire</th>
+                    <th>Quantité</th>
+                    <th>Sous-total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for line in items %}
+                    <tr>
+                        <td>{{ line.nom }}</td>
+                        <td>{{ "%.2f"|format(line.prix) }} €</td>
+                        <td>
+                            <form action="{{ url_for('routes.update_cart') }}" method="POST" style="display:inline">
+                                <input type="hidden" name="vin_id" value="{{ line.id }}">
+                                <input type="hidden" name="action" value="decrease">
+                                <button type="submit">-</button>
+                            </form>
+                            {{ line.qty }}
+                            <form action="{{ url_for('routes.update_cart') }}" method="POST" style="display:inline">
+                                <input type="hidden" name="vin_id" value="{{ line.id }}"/>
+                                <input type="hidden" name="action" value="increase"/>
+                                <button type="submit">+</button>
+                            </form>
+                        </td>
+
+                        <td>{{ "%.2f"|format(line.line_total) }} €</td>
+                        <td>
+                            <form action="{{ url_for('routes.update_cart') }}" method="POST" style="display:inline">
+                                <input type="hidden" name="vin_id" value="{{ line.id }}">
+                                <input type="hidden" name="action" value="remove">
+                                <button type="submit">Retirer</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <h3>Total : {{ "%.2f"|format(total) }} €</h3>
+    </body>
+</html>

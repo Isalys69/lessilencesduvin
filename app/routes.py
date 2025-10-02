@@ -10,6 +10,11 @@ def _init_cart():
         session["cart"] = {}
         session.modified = True
 
+@bp.route("/")
+def construction():
+    return render_template("construction.html")
+
+
 @bp.route("/catalogue")
 def catalogue():
     db_path = Path("instance/vins.db")

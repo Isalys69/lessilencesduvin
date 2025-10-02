@@ -1,26 +1,34 @@
+import os
 import sqlite3
 from flask import Flask, g
-from pathlib import Path
+from dotenv import load_dotenv
+
+# Charger les variables d'environnement depuis config/.env
+load_dotenv(os.path.join(os.path.dirname(__file__), "..", "config", ".env"))
+
+# Crée l'application Flask
+app = Flask(__name__, instance_relative_config=True)
+
+# Clé secrète depuis le .env
+app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
+
+# Gestion de la base de données SQLite
+DATABASE = os.path.join(os.path.dirname(__file__), "..", "vins.db")
 
 def get_db():
+    """Retourne la connexion à la base SQLite, attachée au contexte Flask."""
     if "db" not in g:
-        db_path = Path("instance/vins.db")
-        g.db = sqlite3.connect(db_path)
+        g.db = sqlite3.connect(DATABASE)
         g.db.row_factory = sqlite3.Row
     return g.db
 
-def close_db(e=None):
+@app.teardown_appcontext
+def close_db(error=None):
+    """Ferme la connexion SQLite à la fin de chaque requête."""
     db = g.pop("db", None)
     if db is not None:
         db.close()
 
-def create_app():
-    app = Flask(__name__, instance_relative_config=True)
-    app.secret_key = "s7Df@9z!j2Lp%YqT0vWx3eKuR6BnMh"  # ✅ ajoute la clé ici
-    app.teardown_appcontext(close_db)
-
-    # Import et enregistrement du blueprint
-    from . import routes
-    app.register_blueprint(routes.bp)
-
-    return app
+# Import et enregistrement des routes (via un blueprint)
+from app import routes
+app.register_blueprint(routes.bp)

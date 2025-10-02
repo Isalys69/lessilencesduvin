@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+    <head>
+        <meta charset="UTF-8">
+        <title>Les Silences du Vin</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    </head>
+
+    <body>
+        <!-- Bandeau cookies -->
+        <div id="cookie-banner" style="display:none; background:#eee; padding:1em; text-align:center;">
+            Ce site utilise des cookies techniques essentiels à son fonctionnement.
+            <button onclick="acceptCookies()">Accepter</button>
+        </div>
+        
+        <!-- Header commun -->
+        <header>
+            <nav>
+                <a href="/">Accueil</a>
+                <a href="/catalogue">Catalogue</a>
+                <a href="/contact">Contact</a>
+            </nav>
+        </header>
+
+        <!-- Contenu spécifique à chaque page -->
+        {% block content %}{% endblock %}
+
+        <!-- Footer commun -->
+        <footer>
+            <p>&copy; 2025 Les Silences du Vin</p>
+        </footer>
+
+        <!-- Scripts -->
+        <script src="{{ url_for('static', filename='js/cookie-banner.js') }}"></script>
+    </body>
+</html>

@@ -23,5 +23,8 @@ def blanc():
 def garde():
     return render_template("garde.html")
 
+@bp.route("/contact")
+def contact():
+    return render_template("contact.html")
 
 

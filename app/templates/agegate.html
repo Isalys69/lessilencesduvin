@@ -1,35 +1,4 @@
-<!DOCTYPE html>
-<html lang="{{ t.html_lang }}">
-<head>
-    <meta charset="UTF-8">
-    <title>{{ t.agegate_title }}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/agegate.css') }}">
-</head>
-<body>
-    <img src="{{ url_for('static', filename='images/logo-les-silences-du-vin.png') }}" alt="Les Silences du Vin" class="logo">
-    <div class="card">
-        <div class="subtitle">
-            {{ t.slogan }}<br><br>
-            {{ t.access_condition }}<br><br>
-            <b>{{ t.birthdate_label }}</b>
-        </div>
-        <form method="POST">
-            <input type="date" name="birthdate" required>
-            <br>
-            <button type="submit">{{ t.btn_access }}</button>
-        </form>
-        {% if message %}
-        <div class="small" style="color:red">{{ message }}</div>
-        {% endif %}
-        <div class="small">
-            {{ t.abuse_warning }}<br>
-            {{ t.minors_warning }}
-        </div>
-    </div>
-    <div style="margin-top:2em;">
-        <a href="{{ url_for('agegate', lang='fr') }}">🇫🇷</a>
-        <a href="{{ url_for('agegate', lang='it') }}">🇮🇹</a>
-    </div>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block content %}
+{% endblock %}

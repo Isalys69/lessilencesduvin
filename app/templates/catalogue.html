@@ -1,28 +1,13 @@
-<!DOCTYPE html>
 
-<html lang="fr">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <title>Catalogue</title>
-</head>
-
-<body>
+  {% block content %}
     <h1>Catalogue des vins</h1>
+    <p>Découvrez notre catalogue de vins rares et de niche, choisis pour leur intensité et l’émotion qu’ils éveillent. Chaque bouteille reflète l’âme de son vigneron.</p>
     <ul>
-        {% for vin in vins %}
-            <li>
-                <h3>{{ vin.nom }}</h3>
-                <img src=" {{ vin.image }}" width="50">
-                Domaine : {{ vin.domaine }} <br>
-                Millésime : {{ vin.millesime }}<br>
-                Prix : {{ vin.prix }} € <br>
-                <form action="{{ url_for('routes.shoppingbasket') }}" method="POST">
-                    <input type="hidden" name="vin_id" value="{{ vin.id }}"/>
-                    <button type="submit">Ajouter au panier</button>
-                </form>
-            </li>                
-        {% endfor %}
+        <li><a href="{{ url_for('routes.rouge') }}">Vins rouges</a></li>
+        <li><a href="{{ url_for('routes.blanc') }}">Vins blancs</a></li>
+        <li><a href="{{ url_for('routes.garde') }}">Vins de garde</a></li>
     </ul>
-</body>
-</html>
+
+  {% endblock %}

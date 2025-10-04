@@ -2,10 +2,9 @@ function validateAge(isAdult) {
     if (isAdult) {
         // Crée un cookie de session (pas de durée → supprimé à la fermeture du navigateur)
         document.cookie = "age_verified=true; path=/";
-        document.getElementById("age-gate").style.display = "none";
-        document.getElementById("cookie-banner").style.display = "block"; // <-- Affiche le bandeau
+        window.location.href = "/"; // recharge vers la page d’accueil
     } else {
-        window.location.href = "https://www.alcool-info-service.fr/";
+        window.location.href = "https://sante.gouv.fr/IMG/pdf/affiche_vente_a_emporter_-_affichage_caisses_enregistreuses_a5.pdf";
     }
 }
 

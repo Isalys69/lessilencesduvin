@@ -5,9 +5,9 @@
     <h1>Catalogue des vins</h1>
     <p>Découvrez notre catalogue de vins rares et de niche, choisis pour leur intensité et l’émotion qu’ils éveillent. Chaque bouteille reflète l’âme de son vigneron.</p>
     <ul>
-        <li><a href="{{ url_for('routes.rouge') }}">Vins rouges</a></li>
-        <li><a href="{{ url_for('routes.blanc') }}">Vins blancs</a></li>
-        <li><a href="{{ url_for('routes.garde') }}">Vins de garde</a></li>
+        <li><a href="{{ url_for('rouge.index') }}">Vins rouges</a></li>
+        <li><a href="{{ url_for('blanc.index') }}">Vins blancs</a></li>
+        <li><a href="{{ url_for('garde.index') }}">Vins de garde</a></li>
     </ul>
 
   {% endblock %}

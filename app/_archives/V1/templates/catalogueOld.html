@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Catalogue</title>
+</head>
+
+<body>
+    <h1>Catalogue des rouges</h1>
+    <link href="{{ url_for('templates', filename='/rouge.html') }}"/>
+
+    <h1>Catalogue des blancs</h1>
+    <link href="{{ url_for('templates', filename='/blanc.html') }}"/>
+
+    <h1>Catalogue de garde</h1>
+    <link href="{{ url_for('templates', filename='/rouge.html') }}"/>
+
+    <h1>Catalogue des vins</h1>
+    <ul>
+        {% for vin in vins %}
+            <li>
+                <h3>{{ vin.nom }}</h3>
+                <img src=" {{ vin.image }}" width="50">
+                Domaine : {{ vin.domaine }} <br>
+                Millésime : {{ vin.millesime }}<br>
+                Prix : {{ vin.prix }} € <br>
+                <form action="{{ url_for('routes.shoppingbasket') }}" method="POST">
+                    <input type="hidden" name="vin_id" value="{{ vin.id }}"/>
+                    <button type="submit">Ajouter au panier</button>
+                </form>
+            </li>                
+        {% endfor %}
+    </ul>
+</body>
+</html>

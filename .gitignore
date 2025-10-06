@@ -1,30 +1,55 @@
-# Fichiers système macOS
+##############################################
+# .gitignore — Projet Les Silences du Vin (V1)
+# Objectif : dépôt propre, versionné, sans bruit local
+##############################################
+
+# ——————————————————————
+# 🧩 Fichiers système
+# ——————————————————————
 .DS_Store
 
-# Caches Python
+# ——————————————————————
+# 🐍 Caches et artefacts Python
+# ——————————————————————
 __pycache__/
-*.pyc
+*.py[cod]
 *.pyo
 *.pyd
 
-# Virtualenv
+# ——————————————————————
+# 🌱 Environnements virtuels
+# ——————————————————————
 venv/
 ENV/
 env/
 *.env
 
-# Instance Flask et base de données
+# ——————————————————————
+# 🧱 Instance Flask et bases locales
+# ——————————————————————
 instance/
+*.sqlite3
 *.db
+!vins.db          # on conserve la base V1 de référence
 
-# Fichiers modèles (non destinés à la prod V1)
-app/templates/cgv-complete.html
-app/templates/politique_confidentialite.html
-
-
-# Fichiers de travail perso (non versionnés)
+# ——————————————————————
+# 🧰 Fichiers de travail personnels / obsolètes
+# ——————————————————————
 app/new_initdb.py
 app/old__init__.py
 app/old_routes.py
-app/templates/old.shoppingbasket.html
 old-initdb.py
+app/templates/old.shoppingbasket.html
+
+# ——————————————————————
+# 🪶 Logs
+# ——————————————————————
+*.log
+
+# ——————————————————————
+# 🗂️ Notes
+# ——————————————————————
+# ✅ _archives est versionné : mémoire technique des anciennes versions
+# ⚠️ Les fichiers de type “cgv-complete.html” ou “politique_confidentialite.html”
+# peuvent être archivés dans /app/_archives/V1/templates/ plutôt qu’ignorés ici.
+##############################################

@@ -43,13 +43,13 @@ def create_app():
     # 🔌 Enregistrement des Blueprints
     # ——————————————————————————————
 
-    #from app.routes import main_bp, rouge_bp, blanc_bp, garde_bp, contact_bp
     from app.routes.main import main_bp
     from app.routes.catalogue import catalogue_bp
     from app.routes.contact import contact_bp
     from app.routes.rouge import rouge_bp
     from app.routes.blanc import blanc_bp
     from app.routes.garde import garde_bp
+    from app.routes.legales import legales_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(catalogue_bp)
@@ -57,5 +57,6 @@ def create_app():
     app.register_blueprint(rouge_bp)
     app.register_blueprint(blanc_bp)
     app.register_blueprint(garde_bp)
+    app.register_blueprint(legales_bp)
 
     return app

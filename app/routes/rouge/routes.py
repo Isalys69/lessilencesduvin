@@ -1,13 +1,14 @@
 """
 Routes du module rouge.
-Affiche la page des vins rouge.
+Affiche les vins rouges depuis la base SQLite.
 """
-
 from flask import Blueprint, render_template
+from app import get_db
 
 rouge_bp = Blueprint('rouge', __name__, url_prefix='/rouge')
 
 @rouge_bp.route('/')
 def index():
-    """Affiche la page du rouge."""
-    return render_template('rouge.html')
+    db = get_db()
+    vins = db.execute("SELECT * FROM vins WHERE couleur = 'Rouge'").fetchall()
+    return render_template('vins_couleur.html', vins=vins, couleur='Rouge')

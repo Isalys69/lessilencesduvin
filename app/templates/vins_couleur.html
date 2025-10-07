@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- ===================================================== -->
+<!-- SECTION : Liste des vins filtrés par couleur -->
+<!-- Reçoit deux variables depuis Flask :
+     - vins : la liste des vins à afficher
+     - couleur : le nom de la catégorie (Rouge, Blanc, Garde) -->
+<!-- ===================================================== -->
+
+<section class="container mt-4">
+  <!-- Titre principal -->
+  <h2>Vins {{ couleur }}</h2>
+
+  <!-- Grille Bootstrap pour l'affichage des cartes -->
+  <div class="row mt-3">
+    {% for vin in vins %}
+    <!-- Une carte = un vin -->
+    <div class="col-md-4 mb-4">
+      <div class="card h-100 shadow-sm">
+
+        <!-- Image du vin -->
+        <img
+          src="{{ url_for('static', filename='img/vins/' ~ vin['image']) }}"
+          class="card-img-top"
+          alt="{{ vin['nom'] }}"
+        >
+
+        <!-- Contenu texte -->
+        <div class="card-body">
+          <h5 class="card-title">{{ vin['nom'] }} ({{ vin['millesime'] }})</h5>
+          <p class="card-text"><em>{{ vin['domaine'] }}</em></p>
+          <p class="card-text">{{ vin['accord'] }}</p>
+        </div>
+
+        <!-- Pied de la carte -->
+        <div class="card-footer text-end">
+          <strong>{{ vin['prix'] }} €</strong>
+        </div>
+
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+{% endblock %}

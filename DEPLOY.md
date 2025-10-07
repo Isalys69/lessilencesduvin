@@ -83,3 +83,23 @@ Vérification : git status → nothing to commit, working tree clean.
 ✅ Déployé en production
 🕒 07 octobre 2025
 🔖 Commit : G1R0C5 — Ajout pages légales conformes (Mentions, CGV, Confidentialité)
+
+
+## 🏁 G1R1C0 — Cadran 1 (Urgent & Important) clôturé
+
+### 🎯 Objectif
+Finaliser le socle technique et légal du projet avant ouverture publique.
+
+### 🧩 Contenu
+- Architecture Flask professionnelle (Blueprints + templates)
+- Connexion Git ↔ PythonAnywhere
+- Nettoyage du dépôt et versionnage clair
+- Ajout des pages légales conformes (RGPD + CGV)
+- Tests et validation de production
+
+### 🏷️ Tag Git
+`G1R1C0` — Stabilisation Flask + déploiement production
+
+### 📦 Statut
+✅ Terminé — 07 octobre 2025
+

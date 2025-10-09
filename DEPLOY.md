@@ -103,3 +103,36 @@ Finaliser le socle technique et légal du projet avant ouverture publique.
 ### 📦 Statut
 ✅ Terminé — 07 octobre 2025
 
+🟣 G1R2C1 — Connexion base SQLite & affichage dynamique
+Date : 09/10/2025
+Auteur : Isalys
+Objectif : Passage du site Les Silences du Vin en affichage dynamique à partir d’une base SQLite.
+Modifications principales :
+Ajout d’un logger avec fichier app/data/app.log
+Centralisation des fonctions get_db() et close_db() au niveau du module app
+Création du template unique vins_couleur.html pour les pages Rouge / Blanc / Garde
+Intégration de Bootstrap 5 (CDN) pour la mise en page responsive
+Migration du dossier d’images vers app/static/img/vins/
+Vérification du .gitignore (suppression des .DS_Store)
+Test des routes dynamiques : /rouge, /blanc, /garde
+Import de la base locale vins.db sur PythonAnywhere
+Validation du fonctionnement prod après déploiement git pull origin main
+Commandes principales :
+# Déploiement
+cd lessilencesduvin
+git pull origin main
+
+# Vérification structure
+sqlite3 app/data/vins.db
+.tables
+SELECT COUNT(*) FROM vins;
+
+# Reload application
+[Reload depuis le Dashboard PythonAnywhere]
+Résultat :
+✅ Connexion SQLite stable
+✅ Affichage dynamique des vins validé
+✅ Mise en page responsive opérationnelle
+✅ Données locales synchronisées avec la prod
+
+

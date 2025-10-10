@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
 
+# ✅ Assure le chargement du .env s’il existe
 load_dotenv()
 
 class Config:
@@ -10,6 +11,7 @@ class Config:
     MAIL_USERNAME = os.getenv('MAIL_USERNAME')
     MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
     MAIL_USE_SSL = os.getenv('MAIL_USE_SSL', 'True') == 'True'
-    MAIL_RECIPIENT = os.getenv('MAIL_RECIPIENT').split(',')
 
-
+    # ✅ Protection : évite le .split sur None
+    raw_recipients = os.getenv('MAIL_RECIPIENT', '')
+    MAIL_RECIPIENT = [r.strip() for r in raw_recipients.split(',') if r.strip()]

@@ -13,6 +13,19 @@
 </head>
 
 <body>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="container mt-3">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
   <!-- Age Gate -->
   <div id="age-gate" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#fff; text-align:center; padding-top:10%;">
     <h2>Bienvenue sur Les Silences du Vin</h2>
@@ -73,5 +86,15 @@
 
   <!-- ✅ Scripts perso -->
   <script src="{{ url_for('static', filename='js/cookie-banner.js') }}"></script>
+  <script>
+  const alerts = document.querySelectorAll('.alert');
+  alerts.forEach((alert) => {
+    setTimeout(() => {
+      const bsAlert = new bootstrap.Alert(alert);
+      bsAlert.close();
+    }, 3500); // 3.5 secondes
+  });
+</script>
+
 </body>
 </html>

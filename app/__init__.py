@@ -7,6 +7,7 @@ import sqlite3
 import logging
 from flask import Flask, g
 from dotenv import load_dotenv
+from app.config import Config
 
 # ───────────────────────────────────────────
 # 🔧 Config globale
@@ -38,7 +39,8 @@ def close_db(error=None):
 def create_app():
     """Crée et configure l'application Flask."""
     app = Flask(__name__, instance_relative_config=True)
-    app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
+    #app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
+    app.config.from_object(Config)
 
     
 

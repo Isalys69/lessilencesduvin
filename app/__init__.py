@@ -40,6 +40,11 @@ def create_app():
     app = Flask(__name__, instance_relative_config=True)
     app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 
+    
+
+
+
+
     # 📜 Logger (fichier + console)
     LOG_DIR = os.path.join(app.root_path, "data")
     LOG_PATH = os.path.join(LOG_DIR, "app.log")

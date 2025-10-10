@@ -135,4 +135,34 @@ Résultat :
 ✅ Mise en page responsive opérationnelle
 ✅ Données locales synchronisées avec la prod
 
-
+🧾 Validation production – G1R2C2
+📅 10 octobre 2025
+🎯 Objectif
+Mise en production du formulaire de contact sécurisé :
+Remplacement du mailto: par un envoi réel via SMTP OVH
+Gestion du multi-destinataires
+Sécurisation par variables d’environnement .env
+Intégration Flask-WTF / WTForms (validation et CSRF)
+Affichage des messages flash Bootstrap (succès / erreur)
+Chargement correct du .env dans l’environnement WSGI
+⚙️ Modifications principales
+Fichier Contenu
+app/forms/contact_form.py Création du formulaire WTForms
+app/routes/contact/routes.py  Logique d’envoi SMTP et messages flash
+app/config.py Chargement .env + fallback MAIL_RECIPIENT
+app/templates/contact.html  Nouveau formulaire Bootstrap
+app/templates/base.html Bloc de messages flash
+www_lessilencesduvin_fr_wsgi.py Ajout du chargement .env avant create_app()
+🧩 Déploiement PythonAnywhere
+cd ~/lessilencesduvin
+git pull origin main
+touch /var/www/lessilencesduvin_pythonanywhere_com_wsgi.py
+🧪 Vérifications post-déploiement
+ Page /contact accessible
+ Envoi du formulaire → contact@lessilencesduvin.fr + contact@inspirecode.fr
+ Message flash “Votre message a bien été envoyé” visible
+ Aucun log d’erreur WSGI
+ .env chargé correctement via WSGI
+🏁 Résultat
+Version G1R2C2 stable et validée en production.
+Prochaine étape : optimisation UX & gestion dynamique des contenus (G1R3).

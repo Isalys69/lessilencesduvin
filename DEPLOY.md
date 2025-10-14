@@ -166,3 +166,21 @@ touch /var/www/lessilencesduvin_pythonanywhere_com_wsgi.py
 🏁 Résultat
 Version G1R2C2 stable et validée en production.
 Prochaine étape : optimisation UX & gestion dynamique des contenus (G1R3).
+
+
+✅ Commit G1 R2 C3 – Mise en place du panier simplifié
+Résumé fonctionnel :
+Implémentation complète du panier côté serveur et client.
+Aucune gestion de session, stockage temporaire en mémoire.
+Détails du commit :
+Ajout du module app/data/panier_data.py → stockage central de PANIER
+Ajout de app/utils/panier_tools.py → fonction centralisée get_compteur_panier()
+Création de render_panier() dans app/routes/panier/routes.py → rendu unique partagé
+Routes :
+/panier/ → affichage du panier
+/panier/ajouter → ajout JSON via fetch
+/panier/update_cart → gestion + / – / retirer
+/panier/checkout → simulation de sauvegarde
+shoppingbasket.html étendu depuis base.html, gestion des boutons fonctionnelle
+Compteur du menu synchronisé sur le nombre total de bouteilles
+Correction du circular import via déplacement de PANIER dans app/data/panier_data.py

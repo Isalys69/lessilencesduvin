@@ -68,7 +68,6 @@ def update_cart():
                 PANIER.remove(item)
             break
 
-    # 🔹 Réutilisation de la fonction commune
     return render_panier()
 
 

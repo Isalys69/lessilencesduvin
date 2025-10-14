@@ -3,11 +3,15 @@ import smtplib, ssl
 from email.mime.text import MIMEText
 from flask import Blueprint, render_template, flash, redirect, url_for, current_app
 from app.forms.contact_form import ContactForm
+from app.utils.panier_tools import get_compteur_panier
+
 
 contact_bp = Blueprint('contact', __name__, url_prefix='/contact')
 
 @contact_bp.route('/', methods=['GET', 'POST'])
 def index():
+    # 🔹 Calcul du compteur
+    compteur = get_compteur_panier()
     form = ContactForm()
     if form.validate_on_submit():
         msg = MIMEText(
@@ -39,5 +43,4 @@ def index():
             flash("⚠️ Une erreur est survenue lors de l’envoi. Merci de réessayer plus tard.", "danger")
 
         return redirect(url_for('contact.index'))
-
-    return render_template('contact.html', form=form)
+    return render_template('contact.html', form=form, compteur=compteur)

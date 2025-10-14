@@ -51,6 +51,8 @@
         </button>
         <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
           <ul class="navbar-nav text-center">
+
+
             <li class="nav-item mx-2">
               <a class="nav-link px-3 py-2 fw-semibold" href="/">Accueil</a>
             </li>
@@ -60,6 +62,12 @@
             <li class="nav-item mx-2">
               <a class="nav-link px-3 py-2 fw-semibold" href="{{ url_for('contact.index') }}">Contact</a>
             </li>
+
+            <li class="nav-item mx-2">
+              <a class="nav-link px-3 py-2 fw-semibold" href="{{ url_for('panier.index') }}">🛒 Panier (<span id="compteur-panier">{{ compteur|default(0) }}</span>)</a>
+            </li>
+
+
           </ul>
         </div>
       </div>
@@ -86,6 +94,26 @@
 
   <!-- ✅ Scripts perso -->
   <script src="{{ url_for('static', filename='js/cookie-banner.js') }}"></script>
+
+  <!-- ✅ Panier simplifié -->
+  <script>
+  function ajouterPanier(id, nom, prix) {
+    fetch('/panier/ajouter', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ vin_id: id, nom: nom, prix: prix })
+    })
+    .then(res => res.json())
+    .then(data => {
+      // Met à jour le compteur panier s’il existe
+      const compteur = document.getElementById('compteur-panier');
+      if (compteur)  compteur.textContent = data.total_qty;
+    })
+    .catch(err => console.error('Erreur panier :', err));
+  }
+  </script>
+
+  <!-- ✅ Auto-fermeture des alertes -->
   <script>
   const alerts = document.querySelectorAll('.alert');
   alerts.forEach((alert) => {

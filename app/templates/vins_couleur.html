@@ -34,8 +34,14 @@
         </div>
 
         <!-- Pied de la carte -->
-        <div class="card-footer text-end">
+        <div class="card-footer d-flex justify-content-between align-items-center">
           <strong>{{ vin['prix'] }} €</strong>
+
+          <!-- ✅ Bouton Ajouter au panier -->
+          <button class="btn btn-outline-dark btn-sm"
+                  onclick="ajouterPanier({{ vin['id'] }}, '{{ vin['nom'] }}', {{ vin['prix'] }})">
+            🛒 Ajouter
+          </button>
         </div>
 
       </div>
@@ -43,5 +49,4 @@
     {% endfor %}
   </div>
 </section>
-
 {% endblock %}

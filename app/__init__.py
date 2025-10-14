@@ -94,6 +94,8 @@ def create_app():
     from app.routes.blanc import blanc_bp
     from app.routes.garde import garde_bp
     from app.routes.legales import legales_bp
+    from app.routes.panier import panier_bp
+
 
     app.register_blueprint(main_bp)
     app.register_blueprint(catalogue_bp)
@@ -102,5 +104,6 @@ def create_app():
     app.register_blueprint(blanc_bp)
     app.register_blueprint(garde_bp)
     app.register_blueprint(legales_bp)
+    app.register_blueprint(panier_bp)
 
     return app

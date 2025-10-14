@@ -1,60 +1,61 @@
-<!DOCTYPE html>
+{% extends "base.html" %}
+{% block content %}
 
-<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Panier</title>
+</head>
 
-    <head>
-        <meta charset="UTF-8">
-        <title>Panier</title>
-    </head>
-
-    <body>
-        <h1>votre panier des vins</h1>
-        <table>
-            <thead>
+<body>
+    <h1>votre panier des vins</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Vin</th>
+                <th>Prix unitaire</th>
+                <th>Quantité</th>
+                <th>Sous-total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for line in items %}
                 <tr>
-                    <th>Vin</th>
-                    <th>Prix unitaire</th>
-                    <th>Quantité</th>
-                    <th>Sous-total</th>
+                    <td>{{ line.nom }}</td>
+                    <td>{{ "%.2f"|format(line.prix) }} €</td>
+                    <td>
+                        <form action="{{ url_for('panier.update_cart') }}" method="POST" style="display:inline">
+                            <input type="hidden" name="vin_id" value="{{ line.vin_id }}">
+                            <input type="hidden" name="action" value="decrease">
+                            <button type="submit">-</button>
+                        </form>
+
+                        {{ line.qty }}
+
+                        <form action="{{ url_for('panier.update_cart') }}" method="POST" style="display:inline">
+                            <input type="hidden" name="vin_id" value="{{ line.vin_id }}">
+                            <input type="hidden" name="action" value="increase">
+                            <button type="submit">+</button>
+                        </form>
+                    </td>
+
+                    <td>{{ "%.2f"|format(line.line_total) }} €</td>
+                    <td>
+                        <form action="{{ url_for('panier.update_cart') }}" method="POST" style="display:inline">
+                            <input type="hidden" name="vin_id" value="{{ line.vin_id }}">
+                            <input type="hidden" name="action" value="remove">
+                            <button type="submit">Retirer</button>
+                        </form>
+                    </td>
                 </tr>
-            </thead>
-            <tbody>
-                {% for line in items %}
-                    <tr>
-                        <td>{{ line.nom }}</td>
-                        <td>{{ "%.2f"|format(line.prix) }} €</td>
-                        <td>
-                            <form action="{{ url_for('routes.update_cart') }}" method="POST" style="display:inline">
-                                <input type="hidden" name="vin_id" value="{{ line.id }}">
-                                <input type="hidden" name="action" value="decrease">
-                                <button type="submit">-</button>
-                            </form>
-                            {{ line.qty }}
-                            <form action="{{ url_for('routes.update_cart') }}" method="POST" style="display:inline">
-                                <input type="hidden" name="vin_id" value="{{ line.id }}"/>
-                                <input type="hidden" name="action" value="increase"/>
-                                <button type="submit">+</button>
-                            </form>
-                        </td>
+            {% endfor %}
+        </tbody>
+    </table>
 
-                        <td>{{ "%.2f"|format(line.line_total) }} €</td>
-                        <td>
-                            <form action="{{ url_for('routes.update_cart') }}" method="POST" style="display:inline">
-                                <input type="hidden" name="vin_id" value="{{ line.id }}">
-                                <input type="hidden" name="action" value="remove">
-                                <button type="submit">Retirer</button>
-                            </form>
-                        </td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        <h3>Total : {{ "%.2f"|format(total) }} €</h3>
+    <h3>Total : {{ "%.2f"|format(total) }} €</h3>
 
-        <form action="{{ url_for('routes.checkout') }}" method="POST">
-            <button type="submit">Save Panier</button>
-        </form>
+    <form action="{{ url_for('panier.checkout') }}" method="POST">
+        <button type="submit">Save Panier</button>
+    </form>
+</body>
 
-
-    </body>
-</html>
+{% endblock %}

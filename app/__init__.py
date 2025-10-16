@@ -5,7 +5,7 @@ Gère la configuration, la base SQLite et l'enregistrement des Blueprints.
 import os
 import sqlite3
 import logging
-from flask import Flask, g
+from flask import Flask, g, request, redirect
 from dotenv import load_dotenv
 from config.config import Config
 
@@ -82,6 +82,17 @@ def create_app():
             logger.info(f"Connexion SQLite réussie ({DB_PATH})")
         except Exception as e:
             logger.error(f"Erreur connexion SQLite : {e}")
+
+    # ───────────────────────────────────────
+    # 🌐 Redirection HTTP → HTTPS
+    # ───────────────────────────────────────
+    @app.before_request
+    def force_https():
+        # N'applique la redirection que si on n'est pas en local
+        if not request.host.startswith("127.0.0.1") and request.url.startswith("http://"):
+            https_url = request.url.replace("http://", "https://", 1)
+            return redirect(https_url, code=301)
+
 
     # ───────────────────────────────────────
     # 🔌 Blueprints (inchangés)

@@ -105,7 +105,7 @@ def create_app():
     from app.routes.garde import garde_bp
     from app.routes.legales import legales_bp
     from app.routes.panier import panier_bp
-
+    from app.routes.vins import vins_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(catalogue_bp)
@@ -115,5 +115,6 @@ def create_app():
     app.register_blueprint(garde_bp)
     app.register_blueprint(legales_bp)
     app.register_blueprint(panier_bp)
+    app.register_blueprint(vins_bp)
 
     return app

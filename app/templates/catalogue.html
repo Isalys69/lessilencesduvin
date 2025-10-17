@@ -1,13 +1,46 @@
 
 {% extends "base.html" %}
+{% block content %}
+<div class="container my-5">
+  <h1 class="text-center mb-4">Notre sélection de vins</h1>
+  <p class="text-center text-muted mb-5">Explorez notre univers rare et de niche : chaque vin est une émotion à écouter, il reflète l'âme du vigneron.</p>
 
-  {% block content %}
-    <h1>Catalogue des vins</h1>
-    <p>Découvrez notre catalogue de vins rares et de niche, choisis pour leur intensité et l’émotion qu’ils éveillent. Chaque bouteille reflète l’âme de son vigneron.</p>
-    <ul>
-        <li><a href="{{ url_for('rouge.index') }}">Vins rouges</a></li>
-        <li><a href="{{ url_for('blanc.index') }}">Vins blancs</a></li>
-        <li><a href="{{ url_for('garde.index') }}">Vins de garde</a></li>
-    </ul>
+  <div class="row justify-content-center g-4">
+    <!-- Vin rouge -->
+    <div class="col-md-4">
+      <div class="card h-100 shadow-sm border-0">
+        <img src="{{ url_for('static', filename='images/vins_rouges.jpg') }}" class="card-img-top" alt="Vins rouges">
+        <div class="card-body d-flex flex-column justify-content-between text-center">
+          <h5 class="card-title">Vins rouges</h5>
+          <p class="card-text text-muted">Des vins profonds, vibrants et charnels.</p>
+          <a href="{{ url_for('rouge.index') }}" class="btn btn-dark">Découvrir</a>
+        </div>
+      </div>
+    </div>
 
-  {% endblock %}
+    <!-- Vin blanc -->
+    <div class="col-md-4">
+      <div class="card h-100 shadow-sm border-0">
+        <img src="{{ url_for('static', filename='images/vins_blancs.jpg') }}" class="card-img-top" alt="Vins blancs">
+        <div class="card-body d-flex flex-column justify-content-between text-center">
+          <h5 class="card-title">Vins blancs</h5>
+          <p class="card-text text-muted">De la fraîcheur, de la lumière et de la précision.</p>
+          <a href="{{ url_for('blanc.index') }}" class="btn btn-dark">Explorer</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vin de garde -->
+    <div class="col-md-4">
+      <div class="card h-100 shadow-sm border-0">
+        <img src="{{ url_for('static', filename='images/vins_garde.jpg') }}" class="card-img-top" alt="Vins de garde">
+        <div class="card-body d-flex flex-column justify-content-between text-center">
+          <h5 class="card-title">Vins de garde</h5>
+          <p class="card-text text-muted">Des bouteilles à écouter dans le temps, patiemment.</p>
+          <a href="{{ url_for('garde.index') }}" class="btn btn-dark">Accéder</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -43,7 +43,14 @@
   <header>
     <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm sticky-top">
       <div class="container">
-        <a class="navbar-brand fw-bold text-uppercase" href="/">🍷 Les Silences du Vin</a>
+        <a class="navbar-brand d-flex align-items-center" href="{{ url_for('main.index') }}">
+          <img 
+            src="{{ url_for('static', filename='img/logo-les-silences-du-vin.png') }}"
+            alt="Les Silences du Vin" 
+            height="110" 
+            class="me-2"
+          />
+        </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                 data-bs-target="#navbarNav" aria-controls="navbarNav"
                 aria-expanded="false" aria-label="Toggle navigation">

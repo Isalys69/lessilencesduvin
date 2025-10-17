@@ -11,4 +11,4 @@ def index():
     vins = db.execute("SELECT * FROM vins WHERE millesime <= 2018").fetchall()
     # 🔹 Calcul du compteur
     compteur = get_compteur_panier()
-    return render_template('vins_couleur.html', vins=vins, couleur='De garde', compteur=compteur)
+    return render_template('vins_couleur.html', vins=vins, couleur='de garde', compteur=compteur)

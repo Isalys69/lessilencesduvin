@@ -1,7 +1,11 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container py-5">
-  <h2 class="text-center mb-4">Contactez-nous</h2>
+  <h1 class="text-center mb-4">Contactez-nous</h1>
+  <p class="text-center text-muted mb-5">
+    Une question, un conseil, une émotion à partager autour du vin ?  
+    Écrivez-nous : chaque message est lu avec attention et bienveillance.
+  </p>
 
   <form method="POST" novalidate>
     {{ form.hidden_tag() }}

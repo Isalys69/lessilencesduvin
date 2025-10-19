@@ -15,17 +15,26 @@
     {% endif %}
   </p>
 
-  <div class="row g-4">
+  <div class="row g-4 justify-content-center">
     {% for vin in vins %}
-    <div class="col-md-4">
-      <div class="card h-100 shadow-sm border-0">
-        <img src="{{ url_for('static', filename='img/vins/' ~ vin['image']) }}" class="card-img-top" alt="{{ vin['nom'] }}">
+    <div class="col-md-4 col-sm-6 d-flex align-items-stretch">
+      <div class="card h-100 shadow-sm border-0 text-center p-3">
+
+        <!-- ✅ Image centrée et proportionnée -->
+        <div class="d-flex justify-content-center align-items-center" style="height: 360px;">
+          <img src="{{ url_for('static', filename='img/vins/' ~ vin['image']) }}"
+               alt="{{ vin['nom'] }}"
+               class="img-fluid rounded"
+               style="max-height: 340px; object-fit: contain;">
+        </div>
+
         <div class="card-body d-flex flex-column justify-content-between">
           <div>
-            <h5 class="card-title text-center fw-semibold">{{ vin['nom'] }} ({{ vin['millesime'] }})</h5>
-            <p class="text-center text-muted mb-1"><em>{{ vin['domaine'] }}</em></p>
-            <p class="text-center small">{{ vin['accord'] }}</p>
+            <h5 class="card-title fw-semibold">{{ vin['nom'] }} ({{ vin['millesime'] }})</h5>
+            <p class="text-muted mb-1"><em>{{ vin['domaine'] }}</em></p>
+            <p class="small text-secondary">{{ vin['accord'] }}</p>
           </div>
+
           <div class="mt-3 d-flex justify-content-between align-items-center">
             <strong>{{ vin['prix'] }} €</strong>
             <button class="btn btn-outline-dark btn-sm"
@@ -34,6 +43,7 @@
             </button>
           </div>
         </div>
+
       </div>
     </div>
     {% endfor %}

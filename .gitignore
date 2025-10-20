@@ -57,3 +57,4 @@ app/templates/old.shoppingbasket.html
 # ⚠️ Les fichiers de type “cgv-complete.html” ou “politique_confidentialite.html”
 # peuvent être archivés dans /app/_archives/V1/templates/ plutôt qu’ignorés ici.
 ##############################################
+app/static/img/vins/old*

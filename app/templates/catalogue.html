@@ -1,19 +1,24 @@
-
 {% extends "base.html" %}
 {% block content %}
 <div class="container my-5">
   <h1 class="text-center mb-4">Notre sélection de vins</h1>
-  <p class="text-center text-muted mb-5">Explorez notre univers rare et de niche : chaque vin est une émotion à écouter, il reflète l'âme du vigneron.</p>
+  <p class="text-center text-muted mb-5">
+    Explorez notre univers rare et de niche : chaque vin est une émotion à écouter, il reflète l'âme du vigneron.
+  </p>
 
   <div class="row justify-content-center g-4">
     <!-- Vin rouge -->
     <div class="col-md-4">
       <div class="card h-100 shadow-sm border-0">
-        <img src="{{ url_for('static', filename='images/vins_rouges.jpg') }}" class="card-img-top" alt="Vins rouges">
+        <img src="{{ url_for('static', filename='img/categories/rouge.jpg') }}"
+             class="card-img-top" alt="Vins rouges"
+             style="height: 300px; object-fit: cover;">
         <div class="card-body d-flex flex-column justify-content-between text-center">
-          <h5 class="card-title">Vins rouges</h5>
-          <p class="card-text text-muted">Des vins profonds, vibrants et charnels.</p>
-          <a href="{{ url_for('rouge.index') }}" class="btn btn-dark">Découvrir</a>
+          <h5 class="card-title fw-semibold">Vins rouges</h5>
+          <p class="card-text text-muted">
+            Découvrez notre sélection de vins rouges, profonds et vibrants, choisis pour leur caractère et l’émotion qu’ils éveillent.
+          </p>
+          <a href="{{ url_for('rouge.index') }}" class="btn btn-dark mt-2">Découvrir</a>
         </div>
       </div>
     </div>
@@ -21,11 +26,15 @@
     <!-- Vin blanc -->
     <div class="col-md-4">
       <div class="card h-100 shadow-sm border-0">
-        <img src="{{ url_for('static', filename='images/vins_blancs.jpg') }}" class="card-img-top" alt="Vins blancs">
+        <img src="{{ url_for('static', filename='img/categories/blanc.jpg') }}"
+             class="card-img-top" alt="Vins blancs"
+             style="height: 300px; object-fit: cover;">
         <div class="card-body d-flex flex-column justify-content-between text-center">
-          <h5 class="card-title">Vins blancs</h5>
-          <p class="card-text text-muted">De la fraîcheur, de la lumière et de la précision.</p>
-          <a href="{{ url_for('blanc.index') }}" class="btn btn-dark">Explorer</a>
+          <h5 class="card-title fw-semibold">Vins blancs</h5>
+          <p class="card-text text-muted">
+            Découvrez nos vins blancs, lumineux et précis, reflets de la pureté et de la sincérité des vignerons.
+          </p>
+          <a href="{{ url_for('blanc.index') }}" class="btn btn-dark mt-2">Explorer</a>
         </div>
       </div>
     </div>
@@ -33,11 +42,15 @@
     <!-- Vin de garde -->
     <div class="col-md-4">
       <div class="card h-100 shadow-sm border-0">
-        <img src="{{ url_for('static', filename='images/vins_garde.jpg') }}" class="card-img-top" alt="Vins de garde">
+        <img src="{{ url_for('static', filename='img/categories/garde.jpg') }}"
+             class="card-img-top" alt="Vins de garde"
+             style="height: 300px; object-fit: cover;">
         <div class="card-body d-flex flex-column justify-content-between text-center">
-          <h5 class="card-title">Vins de garde</h5>
-          <p class="card-text text-muted">Des bouteilles à écouter dans le temps, patiemment.</p>
-          <a href="{{ url_for('garde.index') }}" class="btn btn-dark">Accéder</a>
+          <h5 class="card-title fw-semibold">Vins de garde</h5>
+          <p class="card-text text-muted">
+            Découvrez nos vins de garde, patinés par le temps, porteurs d’une mémoire et d’une profondeur uniques.
+          </p>
+          <a href="{{ url_for('garde.index') }}" class="btn btn-dark mt-2">Accéder</a>
         </div>
       </div>
     </div>

@@ -6,19 +6,31 @@ import os
 import sqlite3
 import logging
 from flask import Flask, g, request, redirect
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager
 from dotenv import load_dotenv
 from config.config import Config
+from sqlalchemy import text
+
+
+# ───────────────────────────────────────────
+# 📦 Extensions globales (V3)
+# ───────────────────────────────────────────
+db = SQLAlchemy()
+login_manager = LoginManager()
+
 
 # ───────────────────────────────────────────
 # 🔧 Config globale
 # ───────────────────────────────────────────
 load_dotenv(os.path.join(os.path.dirname(__file__), "..", "config", ".env"))
 
-# ✅ Chemin DB unique, au niveau module (ne le redéfinis pas plus bas)
+# Chemin DB unique, au niveau module (ne le redéfinis pas plus bas)
 DB_PATH = os.path.join(os.path.dirname(__file__), "data", "vins.db")
 
+
 # ───────────────────────────────────────────
-# 💾 Fonctions DB accessibles partout
+# 💾 Fonctions DB (compatibilité V1 / V2)
 # ───────────────────────────────────────────
 def get_db():
     """Retourne la connexion SQLite, attachée au contexte Flask."""
@@ -29,9 +41,10 @@ def get_db():
 
 def close_db(error=None):
     """Ferme la connexion SQLite à la fin de chaque requête."""
-    db = g.pop("db", None)
-    if db is not None:
-        db.close()
+    db_conn = g.pop("db", None)
+    if db_conn is not None:
+        db_conn.close()
+
 
 # ───────────────────────────────────────────
 # 🧱 Factory principale Flask
@@ -40,11 +53,6 @@ def create_app():
     """Crée et configure l'application Flask."""
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_object(Config)
-
-    
-
-
-
 
     # 📜 Logger (fichier + console)
     LOG_DIR = os.path.join(app.root_path, "data")
@@ -57,24 +65,22 @@ def create_app():
     console_handler.setLevel(logging.INFO)
     logger.addHandler(console_handler)
 
-    # 🔌 SQLite (V1) — on garde simple
-    USE_SQLALCHEMY = False
+    # 🔌 SQLite (V1) — on garde simple, mais on prépare V3
+    USE_SQLALCHEMY = True  # Activation SQLAlchemy pour V3
     if USE_SQLALCHEMY:
-        from flask_sqlalchemy import SQLAlchemy
         app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv(
             'DATABASE_URL', f"sqlite:///{DB_PATH}"
         )
-        db = SQLAlchemy(app)
+        app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+        db.init_app(app)
         try:
             with app.app_context():
-                db.session.execute('SELECT 1')
+                db.session.execute(text('SELECT 1'))
             logger.info("Connexion SQLAlchemy réussie")
         except Exception as e:
             logger.error(f"Erreur connexion SQLAlchemy : {e}")
     else:
-        # ✅ Enregistre le teardown pour la fermeture de connexion
         app.teardown_appcontext(close_db)
-        # Petit test de connexion
         try:
             conn = sqlite3.connect(DB_PATH)
             conn.execute("SELECT 1")
@@ -88,14 +94,20 @@ def create_app():
     # ───────────────────────────────────────
     @app.before_request
     def force_https():
-        # N'applique la redirection que si on n'est pas en local
         if not request.host.startswith("127.0.0.1") and request.url.startswith("http://"):
             https_url = request.url.replace("http://", "https://", 1)
             return redirect(https_url, code=301)
 
+    # ───────────────────────────────────────
+    # 🔐 Authentification (Flask-Login)
+    # ───────────────────────────────────────
+    from app.models.user import User  # le modèle User sera défini dans G3R1C1
+    login_manager.login_view = "auth.login"
+    login_manager.session_protection = "strong"
+    login_manager.init_app(app)
 
     # ───────────────────────────────────────
-    # 🔌 Blueprints (inchangés)
+    # 🔌 Blueprints 
     # ───────────────────────────────────────
     from app.routes.main import main_bp
     from app.routes.catalogue import catalogue_bp

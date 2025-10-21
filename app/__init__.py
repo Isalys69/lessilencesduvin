@@ -53,7 +53,9 @@ def create_app():
     """Crée et configure l'application Flask."""
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_object(Config)
+    app.permanent_session_lifetime = app.config['PERMANENT_SESSION_LIFETIME']
 
+    
     # 📜 Logger (fichier + console)
     LOG_DIR = os.path.join(app.root_path, "data")
     LOG_PATH = os.path.join(LOG_DIR, "app.log")
@@ -118,6 +120,7 @@ def create_app():
     from app.routes.legales import legales_bp
     from app.routes.panier import panier_bp
     from app.routes.vins import vins_bp
+    from app.routes.auth import auth_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(catalogue_bp)
@@ -128,5 +131,6 @@ def create_app():
     app.register_blueprint(legales_bp)
     app.register_blueprint(panier_bp)
     app.register_blueprint(vins_bp)
+    app.register_blueprint(auth_bp)
 
     return app

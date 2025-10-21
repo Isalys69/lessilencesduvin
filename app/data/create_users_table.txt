@@ -1,0 +1,41 @@
+# ───────────────────────────────────────────────
+# Création de la table "users" – Les Silences du Vin (V3)
+# ───────────────────────────────────────────────
+# À utiliser uniquement si la table users a été supprimée
+# ou lors de la première initialisation SQLAlchemy.
+
+# 📍 Étapes dans le terminal :
+# 1. Se placer dans l’environnement virtuel du projet :
+#    (my_project_env) isalys@iMac-de-Isalys-4 _lessilencesduvin %
+#
+# 2. Ouvrir le shell Flask :
+#    flask shell
+#
+# 3. Dans le shell Python :
+from app import db, create_app
+app = create_app()
+app.app_context().push()
+db.create_all()
+exit()
+
+# ✅ Résultat attendu :
+# Connexion SQLAlchemy réussie
+# ✅ Table 'users' détectée dans vins.db.
+
+# ───────────────────────────────────────────────
+# Structure SQL résultante (automatiquement générée)
+# ───────────────────────────────────────────────
+CREATE TABLE users (
+    id INTEGER NOT NULL,
+    email VARCHAR(120) NOT NULL,
+    password_hash VARCHAR(128) NOT NULL,
+    created_at DATETIME,
+    PRIMARY KEY (id),
+    UNIQUE (email)
+);
+# ───────────────────────────────────────────────
+# Notes :
+# - La table est créée à partir du modèle Python app/models/user.py.
+# - db.create_all() crée UNIQUEMENT les tables absentes.
+# - Les autres données de vins.db ne sont jamais modifiées.
+# ───────────────────────────────────────────────

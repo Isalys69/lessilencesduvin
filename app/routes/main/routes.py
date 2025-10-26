@@ -19,7 +19,7 @@ def index():
 def robots():
     content = """User-agent: *
 Disallow: /admin/
-Disallow: /static/
+Allow: /static/
 Allow: /
 
 Sitemap: https://www.lessilencesduvin.fr/sitemap.xml

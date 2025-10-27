@@ -1,3 +1,4 @@
+import os
 from flask import Blueprint, render_template, request, jsonify,redirect,url_for
 from app.utils.panier_tools import get_session_panier, set_session_panier, get_compteur_panier
 
@@ -6,6 +7,10 @@ panier_bp = Blueprint('panier', __name__, url_prefix='/panier')
 
 # 🔹 Fonction utilitaire interne (un seul rendu du panier)
 def render_panier():
+
+    stripe_public_key = os.getenv("STRIPE_PUBLIC_KEY")
+    print("Clé publique Stripe :", stripe_public_key)  # 👈 test temporaire
+
     panier=get_session_panier()
     items = [
         {
@@ -20,7 +25,9 @@ def render_panier():
     total = sum(i['line_total'] for i in items)
     compteur = get_compteur_panier()
 
-    return render_template('shoppingbasket.html', items=items, total=total, compteur=compteur)
+
+
+    return render_template('shoppingbasket.html', items=items, total=total, compteur=compteur, stripe_public_key=stripe_public_key)
 
 
 

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container my-5 text-center">
+  <h1 class="mb-4 text-success">Paiement réussi ✅</h1>
+  <p class="lead">Merci pour votre commande !</p>
+  <p>Nous préparons soigneusement vos bouteilles pour expédition 🍷</p>
+
+  <div class="mt-5">
+    <a href="{{ url_for('main.index') }}" class="btn btn-dark px-4">
+      Retour à l’accueil
+    </a>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container my-5 text-center">
+  <h1 class="mb-4 text-danger">Paiement annulé ❌</h1>
+  <p class="lead">Aucun débit n’a été effectué.</p>
+  <p>Vous pouvez réessayer ou modifier votre panier avant validation.</p>
+
+  <div class="mt-5">
+    <a href="{{ url_for('panier.index') }}" class="btn btn-outline-dark px-4">
+      Revenir au panier
+    </a>
+  </div>
+</div>
+
+{% endblock %}

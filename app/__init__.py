@@ -121,6 +121,7 @@ def create_app():
     from app.routes.panier import panier_bp
     from app.routes.vins import vins_bp
     from app.routes.auth import auth_bp
+    from app.routes.paiement import paiement_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(catalogue_bp)
@@ -132,5 +133,6 @@ def create_app():
     app.register_blueprint(panier_bp)
     app.register_blueprint(vins_bp)
     app.register_blueprint(auth_bp)
+    app.register_blueprint(paiement_bp)
 
     return app

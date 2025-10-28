@@ -9,7 +9,6 @@ panier_bp = Blueprint('panier', __name__, url_prefix='/panier')
 def render_panier():
 
     stripe_public_key = os.getenv("STRIPE_PUBLIC_KEY")
-    print("Clé publique Stripe :", stripe_public_key)  # 👈 test temporaire
 
     panier=get_session_panier()
     items = [

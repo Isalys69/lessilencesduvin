@@ -5,6 +5,8 @@ from datetime import datetime
 from app import db
 from app.models.commandes import Commande, CommandeProduit
 
+print("Clé publique:", os.getenv("STRIPE_PUBLIC_KEY")[:15], "...")
+print("Webhook secret:", os.getenv("STRIPE_WEBHOOK_SECRET")[:15], "...")
 
 
 paiement_bp = Blueprint('paiement', __name__, url_prefix='/paiement')
@@ -44,6 +46,7 @@ def create_checkout_session():
 
 @paiement_bp.route('/webhook/stripe', methods=['POST'])
 def stripe_webhook():
+
     payload = request.data
     sig_header = request.headers.get('Stripe-Signature')
 

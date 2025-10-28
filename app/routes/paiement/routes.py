@@ -4,6 +4,8 @@ from app.utils.panier_tools import get_session_panier
 from datetime import datetime
 from app import db
 from app.models.commandes import Commande, CommandeProduit
+from flask_login import current_user
+
 
 print("Clé publique:", os.getenv("STRIPE_PUBLIC_KEY")[:15], "...")
 print("Webhook secret:", os.getenv("STRIPE_WEBHOOK_SECRET")[:15], "...")
@@ -72,7 +74,7 @@ def success():
     total = sum(i['prix'] * i['qty'] for i in panier)
 
     # Récupération du client connecté si existant
-    id_client = session.get('user_id')
+    id_client = current_user.user_id if current_user.is_authenticated else None
 
     # Création de la commande
     commande = Commande(

@@ -8,7 +8,7 @@ class Commande(db.Model):
     total = db.Column(db.Float, nullable=False)
     stripe_session_id = db.Column(db.String)
     statut = db.Column(db.String, default='pending')
-    id_client = db.Column(db.Integer, db.ForeignKey('users.id'))
+    id_client = db.Column(db.Integer, db.ForeignKey('users.user_id'))
 
     produits = db.relationship('CommandeProduit', backref='commande', lazy=True)
 

@@ -23,85 +23,53 @@ paiement_bp = Blueprint('paiement', __name__, url_prefix='/paiement')
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 print("✅ Stripe chargé - clé publique :", os.getenv("STRIPE_PUBLIC_KEY")[:15], "...")
 
-
 # ======================================================
-# 🟢 1. Route /checkout
+# 🟢 /paiement/create-checkout-session
 # ------------------------------------------------------
-# ➜ Affiche le formulaire de coordonnées postales
-# ➜ Crée une commande "en_attente" dans la base
-# ➜ Stocke l'id de la commande dans la session Flask
-# ➜ Redirige vers Stripe Checkout
+# ➜ Crée une commande “en attente” avant le paiement Stripe
+# ➜ Lance la session Stripe
+# ➜ Associe la commande à la session Stripe (pour suivi du paiement)
+# ➜ Redirige ensuite vers Stripe Checkout
 # ======================================================
-@paiement_bp.route('/checkout', methods=['GET', 'POST'])
-def checkout():
-    form = GuestCheckoutForm()
-    panier = get_session_panier()
-    total = sum(i['prix'] * i['qty'] for i in panier)
 
-    if not panier:
-        flash("Votre panier est vide.", "warning")
-        return redirect(url_for('catalogue.catalogue'))
-
-    # Si le formulaire est validé, création d'une commande
-    if form.validate_on_submit():
-        commande = Commande(
-            user_id=current_user.user_id if current_user.is_authenticated else None,
-            email_client=form.email.data,
-            prenom_client=form.prenom.data,
-            nom_client=form.nom.data,
-            adresse_livraison=form.adresse_livraison.data,
-            code_postal_livraison=form.code_postal_livraison.data,
-            ville_livraison=form.ville_livraison.data,
-            telephone_livraison=form.telephone.data,
-            total_ttc=total,
-            statut='en_attente',
-            date_commande=datetime.utcnow()
-        )
-        db.session.add(commande)
-        db.session.commit()
-
-        # Stocker l'id de la commande pour la lier ensuite à Stripe
-        flask_session['commande_id'] = commande.id
-
-        print(f"🧾 Commande {commande.id} créée (en attente, total {total} €)")
-
-        # Redirection vers la création de la session Stripe
-        return redirect(url_for('paiement.create_checkout_session'))
-
-    # En GET : afficher le formulaire de coordonnées
-    return render_template('checkout.html', form=form, panier=panier, total=total)
-
-
-# ======================================================
-# 🟠 2. Route /create-checkout-session
-# ------------------------------------------------------
-# ➜ Crée la session Stripe pour le paiement réel.
-# ➜ Lie la session Stripe à la commande déjà créée (statut "en_attente").
-# ➜ En cas d’impossibilité d’accès à l’API Stripe (proxy, réseau, etc.),
-#     un mode simulation est automatiquement déclenché :
-#       - une session fictive TEST_SESSION_xxx est créée,
-#       - la commande est liée à cette session simulée,
-#       - l’utilisateur est redirigé directement vers /success.
-# ======================================================
 @paiement_bp.route('/create-checkout-session', methods=['POST', 'GET'])
 def create_checkout_session():
     panier = get_session_panier()
+    if not panier:
+        flash("Votre panier est vide.", "warning")
+        return redirect(url_for('catalogue.index'))
+
     total = sum(i['prix'] * i['qty'] for i in panier)
     montant_cents = int(float(total) * 100)
 
-    # Détection environnement : local ou production
+    # Détection de l’environnement (local ou production)
     if request.host.startswith("127.0.0.1") or "localhost" in request.host:
         base_url = "http://127.0.0.1:5000"
     else:
         base_url = "https://www.lessilencesduvin.fr"
 
-    # Récupération de la commande en attente
-    commande_id = flask_session.get("commande_id")
-    commande = Commande.query.get(commande_id) if commande_id else None
+    # =====================================================
+    # 🧾 Étape 1 : Création d'une commande "en attente"
+    # -----------------------------------------------------
+    # ➜ On ne demande aucune coordonnée ici
+    # ➜ Juste le montant et le statut
+    # =====================================================
+    commande = Commande(
+        total_ttc=total,
+        statut='en_attente',
+        date_commande=datetime.utcnow()
+    )
+    db.session.add(commande)
+    db.session.commit()
+
+    # Stocker temporairement dans la session Flask
+    flask_session['commande_id'] = commande.id
+
+    print(f"🧾 Commande {commande.id} créée (en attente, total {total} €)")
 
     try:
         # =====================================================
-        # ✅ Tentative de création de session Stripe réelle
+        # 🟢 Étape 2 : Création de la session Stripe
         # =====================================================
         stripe_session = stripe.checkout.Session.create(
             payment_method_types=["card"],
@@ -118,19 +86,23 @@ def create_checkout_session():
             cancel_url=f"{base_url}/paiement/cancel",
         )
 
-        # Lier la session Stripe à la commande
-        if commande:
-            commande.stripe_session_id = stripe_session.id
-            db.session.commit()
-            print(f"🔗 Commande {commande.id} liée à Stripe {stripe_session.id}")
+        # =====================================================
+        # 🔗 Étape 3 : Lier la commande à la session Stripe
+        # =====================================================
+        commande.stripe_session_id = stripe_session.id
+        db.session.commit()
+        print(f"🔗 Commande {commande.id} liée à Stripe {stripe_session.id}")
 
-        # Retour JSON pour intégration front
+        # =====================================================
+        # 🚀 Étape 4 : Retour JSON pour front ou redirection directe
+        # =====================================================
         return jsonify({"id": stripe_session.id})
 
     except Exception as e:
         current_app.logger.error(f"Erreur Stripe : {type(e).__name__} - {e}")
         flash("Le service de paiement est momentanément indisponible. Veuillez réessayer plus tard.", "warning")
-        return redirect(url_for('paiement.checkout'))
+        return redirect(url_for('catalogue.index'))
+
 
 # ======================================================
 # 🟣 3. Webhook Stripe
@@ -162,19 +134,55 @@ def stripe_webhook():
 
     return '', 200
 
+# ======================================================
+# 🟣 /paiement/infos-livraison
+# ------------------------------------------------------
+# ➜ Page post-paiement où le client saisit ses coordonnées
+# ➜ Met à jour la commande existante après succès Stripe
+# ======================================================
+@paiement_bp.route('/infos-livraison', methods=['GET', 'POST'])
+def infos_livraison():
+    commande_id = flask_session.get('commande_id')
+    commande = Commande.query.get(commande_id) if commande_id else None
+
+    if not commande:
+        flash("Aucune commande à compléter.", "warning")
+        return redirect(url_for('catalogue.index'))
+
+    form = GuestCheckoutForm()
+
+    if form.validate_on_submit():
+        commande.email_client = form.email.data
+        commande.prenom_client = form.prenom.data
+        commande.nom_client = form.nom.data
+        commande.adresse_livraison = form.adresse_livraison.data
+        commande.code_postal_livraison = form.code_postal_livraison.data
+        commande.ville_livraison = form.ville_livraison.data
+        commande.telephone_livraison = form.telephone.data
+        commande.adresse_facturation = form.adresse_facturation.data
+        commande.code_postal_facturation = form.code_postal_facturation.data
+        commande.ville_facturation = form.ville_facturation.data
+        commande.statut = 'complétée'
+
+        db.session.commit()
+        flash("Merci ! Vos informations ont bien été enregistrées.", "success")
+        flask_session.pop('panier', None)
+        return redirect(url_for('catalogue.index'))
+
+    return render_template('paiement/infos_livraison.html', form=form, commande=commande)
 
 # ======================================================
-# 🔵 4. Route /success
+# 🔵 4. Route /success (version post-Stripe)
 # ------------------------------------------------------
-# ➜ Page de confirmation après paiement
-# ➜ Vérifie la commande, met à jour le statut si besoin
-# ➜ Vide le panier
+# ➜ Page de confirmation Stripe
+# ➜ Met à jour la commande (statut = payé)
+# ➜ Redirige vers /paiement/infos pour compléter les coordonnées
 # ======================================================
 @paiement_bp.route('/success')
 def success():
     session_id = request.args.get('session_id', '')
     if not session_id:
-        flash("Session Stripe manquante", "warning")
+        flash("Session Stripe manquante.", "warning")
         return render_template('paiement/cancel.html')
 
     # Récupération de la commande liée à cette session Stripe
@@ -183,19 +191,17 @@ def success():
         print("⚠️ Aucune commande trouvée pour cette session Stripe.")
         return render_template('paiement/cancel.html')
 
-    # Si le webhook n'a pas encore confirmé, on le fait ici
+    # Si la commande n’est pas encore marquée comme payée
     if commande.statut != 'payé':
         commande.statut = 'payé'
         db.session.commit()
+        print(f"✅ Commande {commande.id} marquée comme payée.")
 
-    print(f"Commande {commande.id} validée ✅")
+    # Stocker l'ID dans la session Flask
+    flask_session['commande_id'] = commande.id
 
-    # Nettoyage de la session Flask
-    flask_session.pop('panier', None)
-    flask_session.pop('commande_id', None)
-
-    # Afficher la page de succès
-    return render_template('paiement/success.html', commande=commande)
+    # Rediriger vers la page de saisie des informations client
+    return redirect(url_for('paiement.infos_livraison'))
 
 
 # ======================================================

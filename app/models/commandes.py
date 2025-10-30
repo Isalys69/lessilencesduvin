@@ -10,14 +10,14 @@ class Commande(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=True)
 
     # Données du client (toujours requises même si non connecté)
-    email_client = db.Column(db.String(120), nullable=False)
-    prenom_client = db.Column(db.String(80), nullable=False)
-    nom_client = db.Column(db.String(80), nullable=False)
+    email_client = db.Column(db.String(120), nullable=True)
+    prenom_client = db.Column(db.String(80), nullable=True)
+    nom_client = db.Column(db.String(80), nullable=True)
 
     # Adresse de livraison (requise)
-    adresse_livraison = db.Column(db.String(255), nullable=False)
-    code_postal_livraison = db.Column(db.String(20), nullable=False)
-    ville_livraison = db.Column(db.String(80), nullable=False)
+    adresse_livraison = db.Column(db.String(255), nullable=True)
+    code_postal_livraison = db.Column(db.String(20), nullable=True)
+    ville_livraison = db.Column(db.String(80), nullable=True)
     telephone_livraison = db.Column(db.String(30))
 
     # Adresse de facturation (facultative)

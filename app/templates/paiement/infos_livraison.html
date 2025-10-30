@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5">
+  <h1 class="text-center mb-4">Informations pour la livraison</h1>
+  <p 
+    class="text-center text-muted mb-5">
+    Merci pour votre confiance. Quelques informations nous permettront d’assurer une livraison sereine et soignée.
+  </p>
+  <form method="POST" action="{{ url_for('paiement.infos_livraison') }}">
+    {{ form.hidden_tag() }}
+
+    <div class="row">
+      <div class="col-md-6">
+        <div class="mb-3">{{ form.prenom.label(class="form-label") }}{{ form.prenom(class="form-control") }}</div>
+        <div class="mb-3">{{ form.nom.label(class="form-label") }}{{ form.nom(class="form-control") }}</div>
+        <div class="mb-3">{{ form.email.label(class="form-label") }}{{ form.email(class="form-control") }}</div>
+        <div class="mb-3">{{ form.telephone.label(class="form-label") }}{{ form.telephone(class="form-control") }}</div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="mb-3">{{ form.adresse_livraison.label(class="form-label") }}{{ form.adresse_livraison(class="form-control") }}</div>
+        <div class="mb-3">{{ form.code_postal_livraison.label(class="form-label") }}{{ form.code_postal_livraison(class="form-control") }}</div>
+        <div class="mb-3">{{ form.ville_livraison.label(class="form-label") }}{{ form.ville_livraison(class="form-control") }}</div>
+      </div>
+    </div>
+
+    <div class="form-check mt-3">
+      {{ form.accept_cgv(class="form-check-input") }}
+      {{ form.accept_cgv.label(class="form-check-label") }}
+    </div>
+
+    <div class="mt-4">
+      {{ form.submit(class="btn btn-primary", value="Confirmer ma livraison") }}
+    </div>
+  </form>
+</div>
+{% endblock %}

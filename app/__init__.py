@@ -100,6 +100,19 @@ def create_app():
             https_url = request.url.replace("http://", "https://", 1)
             return redirect(https_url, code=301)
 
+    # ------------------------------------------------------
+    # CONTEXT PROCESSOR GLOBAL : compteur du panier
+    # ------------------------------------------------------
+    from app.utils.panier_tools import get_compteur_panier
+    @app.context_processor
+    def inject_panier_count():
+        """Injecte automatiquement le compteur de panier dans tous les templates."""
+        try:
+            panier_count = get_compteur_panier()
+        except Exception:
+            panier_count = 0
+        return dict(panier_count=panier_count)
+
     # ───────────────────────────────────────
     # 🔐 Authentification (Flask-Login)
     # ───────────────────────────────────────
@@ -107,6 +120,7 @@ def create_app():
     login_manager.login_view = "auth.login"
     login_manager.session_protection = "strong"
     login_manager.init_app(app)
+
 
     # ───────────────────────────────────────
     # 🔌 Blueprints 

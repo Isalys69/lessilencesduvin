@@ -94,3 +94,12 @@ def checkout():
     # pour la V1, on "simule" juste la sauvegarde
     print("Panier sauvegardé :", panier)
     return redirect(url_for('panier.index'))
+
+@panier_bp.route('/compteur', methods=['GET'])
+def compteur():
+    """
+    Retourne en JSON le nombre total d'articles dans le panier de la session.
+    Sert aux mises à jour dynamiques du compteur (AJAX / fetch JS).
+    """
+    total = get_compteur_panier()
+    return jsonify({'compteur': total})

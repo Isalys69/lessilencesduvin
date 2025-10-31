@@ -101,7 +101,9 @@
             </li>
 
             <li class="nav-item mx-2">
-              <a class="nav-link px-3 py-2 fw-semibold" href="{{ url_for('panier.index') }}">🛒 Panier (<span id="compteur-panier">{{ compteur|default(0) }}</span>)</a>
+              <a class="nav-link px-3 py-2 fw-semibold" href="{{ url_for('panier.index') }}">
+                🛒 Panier (<span id="compteur-panier">{{ panier_count or 0 }}</span>)
+              </a>
             </li>
 
             <!--  Espace Client / Mon Compte -->
@@ -173,7 +175,7 @@
     .then(data => {
       // Met à jour le compteur panier s’il existe
       const compteur = document.getElementById('compteur-panier');
-      if (compteur)  compteur.textContent = data.total_qty;
+      majCompteurPanier();
     })
     .catch(err => console.error('Erreur panier :', err));
     
@@ -190,6 +192,19 @@
     }, 3500); // 3.5 secondes
   });
 </script>
+
+<script>
+  function majCompteurPanier() {
+    fetch("/panier/compteur")
+      .then(res => res.json())
+      .then(data => {
+        const compteur = document.getElementById("compteur-panier");
+        if (compteur) compteur.textContent = data.compteur;
+      })
+      .catch(err => console.error("Erreur mise à jour compteur :", err));
+  }
+</script>
+
 
 </body>
 </html>

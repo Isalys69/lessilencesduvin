@@ -1,8 +1,15 @@
 import os
+import json
 from flask import Blueprint, render_template, request, jsonify,redirect,url_for
 from app.utils.panier_tools import get_session_panier, set_session_panier, get_compteur_panier
+from flask_login import current_user, login_required
+from app.models.panier_sauvegarde import PanierSauvegarde
+from app import db
 
 panier_bp = Blueprint('panier', __name__, url_prefix='/panier')
+
+
+
 
 
 # 🔹 Fonction utilitaire interne (un seul rendu du panier)
@@ -88,12 +95,12 @@ def update_cart():
     return render_panier()
 
 
-@panier_bp.route('/checkout', methods=['POST'])
-def checkout():
-    panier=get_session_panier()
-    # pour la V1, on "simule" juste la sauvegarde
-    print("Panier sauvegardé :", panier)
-    return redirect(url_for('panier.index'))
+# @panier_bp.route('/checkout', methods=['POST'])
+# def checkout():
+#     panier=get_session_panier()
+#     # pour la V1, on "simule" juste la sauvegarde
+#     print("Panier sauvegardé :", panier)
+#     return redirect(url_for('panier.index'))
 
 @panier_bp.route('/compteur', methods=['GET'])
 def compteur():
@@ -103,3 +110,17 @@ def compteur():
     """
     total = get_compteur_panier()
     return jsonify({'compteur': total})
+
+@panier_bp.route('/save_cart', methods=['POST'])
+@login_required
+def save_cart():
+    panier = get_session_panier()
+    if not panier:
+        return jsonify({'error': 'Panier vide'}), 400
+
+    data = json.dumps(panier, ensure_ascii=False)
+    sauvegarde = PanierSauvegarde(user_id=current_user.user_id, contenu_json=data)
+    db.session.add(sauvegarde)
+    db.session.commit()
+
+    return jsonify({'message': 'Votre panier a été sauvegardé avec succès.'}), 200

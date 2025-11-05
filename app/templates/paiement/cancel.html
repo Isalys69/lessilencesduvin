@@ -1,16 +1,39 @@
 {% extends "base.html" %}
 {% block content %}
+<div class="text-center mt-5">
+  <h2 class="fw-bold text-danger mb-3">Paiement annulé</h2>
+  <p class="lead mb-4">{{ message|safe }}</p>
 
-<div class="container my-5 text-center">
-  <h1 class="mb-4 text-danger">Paiement annulé ❌</h1>
-  <p class="lead">Aucun débit n’a été effectué.</p>
-  <p>Vous pouvez réessayer ou modifier votre panier avant validation.</p>
+  {% if current_user.is_authenticated %}
+    <button id="btn-save-cart" class="btn btn-outline-dark px-4 mb-3">
+      💾 Enregistrer mon panier
+    </button>
+  {% endif %}
 
-  <div class="mt-5">
+  <div>
     <a href="{{ url_for('panier.index') }}" class="btn btn-outline-dark px-4">
-      Revenir au panier
+      🛒 Revenir à mon panier
+    </a>
+    <a href="{{ url_for('catalogue.index') }}" class="btn btn-dark px-4 ms-2">
+      Découvrir d'autres vins
     </a>
   </div>
+
+  <p id="save-msg" class="text-success fw-semibold mt-3" style="display:none;"></p>
 </div>
 
+<script>
+  const saveBtn = document.getElementById('btn-save-cart');
+  if (saveBtn) {
+    saveBtn.addEventListener('click', () => {
+      fetch('/panier/save_cart', { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('save-msg').textContent = data.message;
+          document.getElementById('save-msg').style.display = 'block';
+        })
+        .catch(err => console.error('Erreur sauvegarde panier :', err));
+    });
+  }
+</script>
 {% endblock %}

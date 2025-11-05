@@ -208,12 +208,12 @@ def success():
 # 🔴 5. Route /cancel
 # ------------------------------------------------------
 # ➜ Page affichée si le client annule ou interrompt le paiement Stripe.
-# ➜ Récupère le panier actuel en session pour maintenir l’affichage du badge
-#     "Panier (n)" dans base.html.
 # ➜ Ne modifie pas la commande en base (elle reste 'en_attente').
 # ======================================================
 @paiement_bp.route('/cancel')
 def cancel():
-    panier = get_session_panier()
-    panier_count = sum(i['qty'] for i in panier)
-    return render_template('paiement/cancel.html', panier_count=panier_count)
+    message = (
+        "Votre paiement n’a pas été finalisé.<br>"
+        "Votre panier reste disponible si vous souhaitez reprendre votre commande."
+    )
+    return render_template('paiement/cancel.html', message=message)

@@ -35,9 +35,19 @@ def login():
             login_user(user)
             db.session.permanent = True
             flash("Connexion réussie !", "success")
+
+            # Vérifie le paramètre 'next' envoyé par Flask-Login
             next_page = request.args.get('next')
+
+            # Empêche de revenir sur une route non-GET (comme /save_cart)
+            if next_page and next_page.startswith('/panier/save_cart'):
+                next_page = url_for('panier.index')
+
+            # Redirige proprement
             return redirect(next_page or url_for('main.index'))
+
         flash("Identifiants invalides. Vérifiez votre e-mail ou mot de passe.", "danger")
+
     return render_template('auth/login.html', form=form)
 
 @auth_bp.route('/logout')

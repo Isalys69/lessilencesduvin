@@ -108,6 +108,10 @@ from flask import flash, redirect, url_for, jsonify, request
 @panier_bp.route('/save_cart', methods=['POST'])
 @login_required
 def save_cart():
+    if not current_user.is_authenticated:
+        flash("Connectez-vous pour enregistrer votre panier 💾", "warning")
+        return redirect(url_for('auth.login', next=url_for('panier.index')))    
+
     panier = get_session_panier()
     if not panier:
         flash("Votre panier est vide, rien à enregistrer.", "warning")

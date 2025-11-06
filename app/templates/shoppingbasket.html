@@ -57,13 +57,16 @@
     <h4>Total : <span class="fw-bold">{{ "%.2f"|format(total) }} €</span></h4>
 
     <div class="d-inline-flex align-items-center gap-2 mt-2">
-      {% if current_user.is_authenticated %}
-        <form action="{{ url_for('panier.save_cart') }}" method="post" style="display:inline;">
-          <button type="submit" class="btn btn-outline-dark px-4">
-            💾 Enregistrer mon panier
-          </button>
-        </form>
-      {% endif %}
+      <form action="{{ url_for('panier.save_cart') }}" method="post" style="display:inline;">
+        <button
+          id="btn-save-cart"
+          type="submit"
+          class="btn btn-outline-dark px-4 {% if not current_user.is_authenticated %}disabled-btn{% endif %}">
+          💾 Enregistrer mon panier
+        </button>
+
+      </form>
+
       <button id="checkout-button" class="btn btn-dark px-4 ms-2">Payer</button>
     </div>
 
@@ -101,16 +104,13 @@
 </script>
 
 <script>
-  const saveBtn = document.getElementById('btn-save-cart');
-  if (saveBtn) {
-    saveBtn.addEventListener('click', () => {
-      fetch('/panier/save_cart', { method: 'POST' })
+  const btnSave = document.getElementById('btn-save-cart');
+  if (btnSave && btnSave.disabled) {
+    btnSave.addEventListener('click', e => {
+      e.preventDefault();
+      fetch('/auth/flash-login-info')
         .then(res => res.json())
-        .then(data => {
-          document.getElementById('save-msg').textContent = data.message;
-          document.getElementById('save-msg').style.display = 'block';
-        })
-        .catch(err => console.error('Erreur sauvegarde panier :', err));
+        .then(data => alert(data.message)); // ou mieux : flash message
     });
   }
 </script>

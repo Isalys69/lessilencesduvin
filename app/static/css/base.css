@@ -32,3 +32,10 @@ body {
   color: #6a3c1f;  /* ton lie-de-vin doux */
   border-radius: 0.3rem;
 }
+
+
+.disabled-btn {
+  opacity: 0.5;
+  pointer-events: auto; /* autorise le clic */
+  cursor: not-allowed;
+}

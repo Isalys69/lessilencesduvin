@@ -1,6 +1,6 @@
 import os
 import json
-from flask import Blueprint, render_template, request, jsonify,redirect,url_for
+from flask import Blueprint, render_template, request, jsonify,redirect,url_for, flash
 from app.utils.panier_tools import get_session_panier, set_session_panier, get_compteur_panier
 from flask_login import current_user, login_required
 from app.models.panier_sauvegarde import PanierSauvegarde
@@ -94,14 +94,6 @@ def update_cart():
 
     return render_panier()
 
-
-# @panier_bp.route('/checkout', methods=['POST'])
-# def checkout():
-#     panier=get_session_panier()
-#     # pour la V1, on "simule" juste la sauvegarde
-#     print("Panier sauvegardé :", panier)
-#     return redirect(url_for('panier.index'))
-
 @panier_bp.route('/compteur', methods=['GET'])
 def compteur():
     """
@@ -111,16 +103,28 @@ def compteur():
     total = get_compteur_panier()
     return jsonify({'compteur': total})
 
+from flask import flash, redirect, url_for, jsonify, request
+
 @panier_bp.route('/save_cart', methods=['POST'])
 @login_required
 def save_cart():
     panier = get_session_panier()
     if not panier:
-        return jsonify({'error': 'Panier vide'}), 400
+        flash("Votre panier est vide, rien à enregistrer.", "warning")
+        return redirect(url_for('panier.index'))
 
     data = json.dumps(panier, ensure_ascii=False)
-    sauvegarde = PanierSauvegarde(user_id=current_user.user_id, contenu_json=data)
-    db.session.add(sauvegarde)
-    db.session.commit()
+    existant = PanierSauvegarde.query.filter_by(
+        user_id=current_user.user_id,
+        contenu_json=data
+    ).first()
 
-    return jsonify({'message': 'Votre panier a été sauvegardé avec succès.'}), 200
+    if existant:
+        flash("💾 Ce panier est déjà sauvegardé.", "info")
+    else:
+        sauvegarde = PanierSauvegarde(user_id=current_user.user_id, contenu_json=data)
+        db.session.add(sauvegarde)
+        db.session.commit()
+        flash("✅ Votre panier a été sauvegardé avec succès.", "success")
+
+    return redirect(url_for('panier.index'))

@@ -4,6 +4,7 @@ from flask_login import login_required, current_user
 from app import db
 from app.models.vin import Vin
 from app.models.domaine import Domaine
+from app.models.commandes import Commande
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -11,7 +12,6 @@ admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 @admin_bp.route("/add-wine", methods=["GET", "POST"])
 @login_required
 def add_wine():
-    # Charge les domaines pour le select
     domaines = Domaine.query.order_by(Domaine.nom.asc()).all()
 
     if request.method == "POST":
@@ -39,6 +39,9 @@ def add_wine():
 @admin_bp.route("/commandes", methods=["GET"])
 @login_required
 def commandes():
-    # Cette route existe possiblement dans le commit suivant (da8cdc0).
-    # On la garde minimaliste ici pour éviter une casse si elle est appelée.
-    return render_template("admin/commandes.html", user=current_user)
+    commandes = (
+        Commande.query.order_by(Commande.date_commande.desc()).all()
+        if hasattr(Commande, "query")
+        else []
+    )
+    return render_templa_

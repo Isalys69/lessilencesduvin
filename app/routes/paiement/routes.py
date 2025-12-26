@@ -1,12 +1,16 @@
 import os, stripe
 from datetime import datetime
 from flask import Blueprint, render_template, request, jsonify, session as flask_session, redirect, url_for, flash
+from flask import current_app
 from flask_login import current_user
 
 from app import db
 from app.models.commandes import Commande, CommandeProduit
 from app.forms.checkout import GuestCheckoutForm
 from app.utils.panier_tools import get_session_panier
+from app.utils.email import send_plain_email
+
+
 
 # ======================================================
 # 🧭 Blueprint Paiement
@@ -139,9 +143,11 @@ def stripe_webhook():
 # ------------------------------------------------------
 # ➜ Page post-paiement où le client saisit ses coordonnées
 # ➜ Met à jour la commande existante après succès Stripe
+# ➜ Envoie un courriel de confirmation au client
 # ======================================================
 @paiement_bp.route('/infos-livraison', methods=['GET', 'POST'])
 def infos_livraison():
+
     commande_id = flask_session.get('commande_id')
     commande = Commande.query.get(commande_id) if commande_id else None
 
@@ -164,9 +170,31 @@ def infos_livraison():
         commande.ville_facturation = form.ville_facturation.data
         commande.statut = 'complétée'
 
+        # condition transactionnelle
+        if commande.statut == "complétée":
+            body = (
+                f"Bonjour {commande.prenom_client},\n\n"
+                f"Votre commande #{commande.id} a bien été enregistrée.\n"
+                f"Montant : {commande.total_ttc} €\n\n"
+                f"Nous vous contacterons si nécessaire.\n\n"
+                f"Les Silences du Vin"
+            )
+
+            try:
+                send_plain_email(
+                    subject="Confirmation de votre commande",
+                    body=body,
+                    sender=current_app.config['MAIL_USERNAME'],
+                    recipients=[commande.email_client],
+                    reply_to="contact@lessilencesduvin.com"
+                )
+            except Exception as e:
+                current_app.logger.error(f"Erreur envoi email commande {commande.id} : {e}")
+
         db.session.commit()
         flash("Merci ! Vos informations ont bien été enregistrées.", "success")
         flask_session.pop('panier', None)
+    
         return redirect(url_for('catalogue.index'))
 
     return render_template('paiement/infos_livraison.html', form=form, commande=commande)

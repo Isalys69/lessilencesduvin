@@ -2,6 +2,9 @@ from app import db
 from datetime import datetime
 
 class Commande(db.Model):
+
+
+
     __tablename__ = 'commandes'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -43,3 +46,8 @@ class CommandeProduit(db.Model):
     produit_id = db.Column(db.Integer, nullable=False)
     quantite = db.Column(db.Integer, nullable=False)
     prix_unitaire = db.Column(db.Float, nullable=False)
+
+
+
+
+

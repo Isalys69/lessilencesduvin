@@ -12,7 +12,6 @@ from dotenv import load_dotenv
 from config.config import Config
 from sqlalchemy import text
 
-
 # ───────────────────────────────────────────
 # 📦 Extensions globales (V3)
 # ───────────────────────────────────────────
@@ -115,6 +114,23 @@ def create_app():
             panier_count = 0
         return dict(panier_count=panier_count)
 
+    # ------------------------------------------------------
+    # CONTEXT PROCESSOR GLOBAL : badge nouvelles commandes
+    # ------------------------------------------------------
+    from flask_login import current_user
+    from app.models.commandes import Commande
+
+    @app.context_processor
+    def inject_commandes_badge():
+        """Injecte le nombre de commandes complétées pour l'admin."""
+        nb_commandes = 0
+        try:
+            if current_user.is_authenticated:
+                nb_commandes = Commande.query.filter_by(statut="complétée").count()
+        except Exception:
+            nb_commandes = 0
+        return dict(nb_nouvelles_commandes=nb_commandes)
+
     # ───────────────────────────────────────
     # 🔐 Authentification (Flask-Login)
     # ───────────────────────────────────────
@@ -138,6 +154,7 @@ def create_app():
     from app.routes.vins import vins_bp
     from app.routes.auth import auth_bp
     from app.routes.paiement import paiement_bp
+    from app.routes.admin.routes import admin_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(catalogue_bp)
@@ -150,5 +167,6 @@ def create_app():
     app.register_blueprint(vins_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(paiement_bp)
+    app.register_blueprint(admin_bp)
 
     return app

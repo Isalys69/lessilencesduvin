@@ -1,0 +1,42 @@
+<h2>Ajouter un vin</h2>
+
+<form method="POST">
+
+    <label>Nom</label>
+    <input type="text" name="nom" required>
+
+    <label>Domaine</label>
+    <select name="domaine_id">
+        {% for d in domaines %}
+            <option value="{{ d.id }}">{{ d.nom }}</option>
+        {% endfor %}
+    </select>
+
+    <label>Couleur</label>
+    <select name="couleur" required>
+        <option value="blanc">Blanc</option>
+        <option value="rouge">Rouge</option>
+        <option value="rosé">Rosé</option>
+        <option value="orange">Orange</option>
+    </select>
+
+    <label>Année</label>
+    <input type="number" name="annee">
+
+    <label>Prix (€)</label>
+    <input type="text" name="prix" required>
+
+    <label>Stock</label>
+    <input type="number" name="stock" required min="0">
+
+    <label>Nom du fichier image</label>
+    <input type="text" name="photo" placeholder="arpents_auxerrois_2019.jpg">
+
+    <button type="submit">Ajouter</button>
+</form>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% for category, msg in messages %}
+    <p>{{ msg }}</p>
+  {% endfor %}
+{% endwith %}

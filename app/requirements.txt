@@ -1,6 +1,0 @@
-Flask
-Flask-SQLAlchemy
-SQLAlchemy
-Flask-Login
-python-dotenv
-gunicorn

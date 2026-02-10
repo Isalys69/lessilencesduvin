@@ -1,60 +1,107 @@
 ##############################################
-# .gitignore — Projet Les Silences du Vin (V1)
-# Objectif : dépôt propre, versionné, sans bruit local
+# .gitignore — Les Silences du Vin
+# V1 PRODUCTION — strict, sécurisé, reproductible
 ##############################################
 
-# ——————————————————————
-# 🧩 Fichiers système
-# ——————————————————————
-*.DS_Store
+# ==================================================
+# 🖥️ SYSTÈME & ÉDITEURS
+# ==================================================
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
 
-# ——————————————————————
-# 🐍 Caches et artefacts Python
-# ——————————————————————
+# ==================================================
+# 🐍 PYTHON — caches & artefacts
+# ==================================================
 __pycache__/
 *.py[cod]
 *.pyo
 *.pyd
+*.so
 
-# ——————————————————————
-# 🌱 Environnements virtuels
-# ——————————————————————
+# ==================================================
+# 🌱 ENVIRONNEMENTS VIRTUELS
+# ==================================================
 venv/
 ENV/
 env/
+.env
 *.env
 
-# Exclusions de sécurité
-sauvegardes/
+# ==================================================
+# 🔐 SECRETS & CONFIGURATION SENSIBLE
+# ==================================================
+.env.*
+*.key
+*.pem
+*.crt
 
-
-# ——————————————————————
-# 🧱 Instance Flask et bases locales
-# ——————————————————————
-instance/
-*.sqlite3
+# ==================================================
+# 🗄️ BASES DE DONNÉES (JAMAIS VERSIONNÉES)
+# ==================================================
 *.db
-!vins.db          # on conserve la base V1 de référence
+*.sqlite
+*.sqlite3
+*.db.backup.*
+*.sqlite.backup.*
 
-# ——————————————————————
-# 🧰 Fichiers de travail personnels / obsolètes
-# ——————————————————————
+# Cas explicites (lisibilité & sécurité)
+app/data/*.db
+app/data/*.db.backup.*
+instance/*.db
+instance/*.sqlite*
+
+# ==================================================
+# 🧾 LOGS (risque RGPD / secrets)
+# ==================================================
+*.log
+app/data/app.log
+logs/
+log/
+
+# ==================================================
+# 🧱 FLASK — instance & runtime
+# ==================================================
+instance/
+*.sock
+
+# ==================================================
+# 🧰 FICHIERS TEMPORAIRES / PERSONNELS
+# ==================================================
+*.swp
+*.swo
+*~
+.cache/
+.pytest_cache/
+
+# ==================================================
+# 🗂️ BACKUPS & ARCHIVES LOCALES
+# ==================================================
+sauvegardes/
+backup/
+backups/
+dump/
+
+# ==================================================
+# 🧪 OUTILS / SCRIPTS OBSOLÈTES
+# (mémoire conservée ailleurs si nécessaire)
+# ==================================================
 app/new_initdb.py
 app/old__init__.py
 app/old_routes.py
 old-initdb.py
 app/templates/old.shoppingbasket.html
 
-# ——————————————————————
-# 🪶 Logs
-# ——————————————————————
-*.log
-
-# ——————————————————————
-# 🗂️ Notes
-# ——————————————————————
-# ✅ _archives est versionné : mémoire technique des anciennes versions
-# ⚠️ Les fichiers de type “cgv-complete.html” ou “politique_confidentialite.html”
-# peuvent être archivés dans /app/_archives/V1/templates/ plutôt qu’ignorés ici.
-##############################################
+# ==================================================
+# 🖼️ ASSETS OBSOLÈTES
+# ==================================================
 app/static/img/vins/old*
+
+# ==================================================
+# ✅ FICHIERS À VERSIONNER EXPLICITEMENT
+# ==================================================
+# - app/data/schema.sql
+# - app/data/seed.sql (si créé)
+# - tout le code applicatif
+##############################################

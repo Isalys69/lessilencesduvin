@@ -92,6 +92,9 @@ app/old__init__.py
 app/old_routes.py
 old-initdb.py
 app/templates/old.shoppingbasket.html
+reset_admin_password.py
+app/utils/reset_admin_password.py
+
 
 # ==================================================
 # 🖼️ ASSETS OBSOLÈTES

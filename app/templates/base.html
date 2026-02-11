@@ -174,20 +174,17 @@
 
   <!-- ✅ Panier simplifié -->
   <script>
-  function ajouterPanier(id, nom, prix) {
+  function ajouterPanier(id) {
     fetch('/panier/ajouter', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ vin_id: id, nom: nom, prix: prix })
+      body: JSON.stringify({ vin_id: id })
     })
     .then(res => res.json())
     .then(data => {
-      // Met à jour le compteur panier s’il existe
-      const compteur = document.getElementById('compteur-panier');
       majCompteurPanier();
     })
     .catch(err => console.error('Erreur panier :', err));
-    
   }
   </script>
 

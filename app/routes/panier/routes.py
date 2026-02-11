@@ -41,32 +41,42 @@ def render_panier():
 def index():
     return render_panier()
 
+from app.models.vin import Vin  # si pas déjà importé
+
 @panier_bp.route('/ajouter', methods=['POST'])
 def ajouter():
-    panier=get_session_panier()
-    data = request.get_json()
-    vin_id = str(data.get('vin_id'))
-    nom = data.get('nom')
-    prix = float(data.get('prix', 0))
+    panier = get_session_panier()
+    data = request.get_json(silent=True) or {}
 
-    # 🔹 vérifie si le vin existe déjà
+    vin_id = int(data.get("vin_id"))
+
+    vin = Vin.query.get(vin_id)
+    if not vin:
+        return jsonify({"error": "Vin introuvable"}), 404
+
+    nom = vin.nom
+    prix = float(vin.prix)
+
+    # Comparaison en int
     for item in panier:
-        if item['vin_id'] == vin_id:
-            item['qty'] += 1
+        if int(item["vin_id"]) == vin_id:
+            item["qty"] += 1
             break
     else:
-        panier.append({'vin_id': vin_id, 'nom': nom, 'prix': prix, 'qty': 1})
+        panier.append({
+            "vin_id": vin_id,  # stocké en int
+            "nom": nom,
+            "prix": prix,
+            "qty": 1
+        })
 
-    # ✅ Sauuvegarde le panier mis à jour dans la session
     set_session_panier(panier)
 
-    # ✅ Calcule le total de bouteilles dans le panier
-    total_qty = sum(item['qty'] for item in panier)
+    total_qty = sum(int(item.get('qty', 0)) for item in panier)
 
     return jsonify({
-        'message': f'{nom} ajouté',
-        'panier': panier,
-        'total_qty': total_qty
+        "message": f"{nom} ajouté",
+        "total_qty": total_qty
     }), 200
 
 

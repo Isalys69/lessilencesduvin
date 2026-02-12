@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, abort
 from sqlalchemy.orm import joinedload
 from app.models.vin import Vin
 
@@ -12,6 +12,7 @@ def afficher_vins(couleur):
         vins = (
             Vin.query
             .options(joinedload(Vin.domaine))
+            .filter(Vin.is_active.is_(True))
             .order_by(Vin.nom.asc())
             .all()
         )
@@ -20,6 +21,7 @@ def afficher_vins(couleur):
         vins = (
             Vin.query
             .options(joinedload(Vin.domaine))
+            .filter(Vin.is_active.is_(True))
             .filter(Vin.couleur.ilike(couleur_norm))
             .order_by(Vin.nom.asc())
             .all()
@@ -41,3 +43,18 @@ def afficher_vins(couleur):
         couleur=libelle,
         texte_intro=texte_intro
     )
+
+# Fiche vin (détail)
+@vins_bp.route('/vin/<int:vin_id>')
+def vin_detail(vin_id):
+    vin = (
+        Vin.query
+        .options(joinedload(Vin.domaine))
+        .filter(Vin.is_active.is_(True))
+        .filter(Vin.id == vin_id)
+        .first()
+    )
+    
+    if not vin:
+        abort(404)
+    return render_template('vin_detail.html', vin=vin)

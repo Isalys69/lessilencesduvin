@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section class="container my-5">
+
+  <nav class="small text-muted mb-3">
+    <a href="{{ url_for('vins.afficher_vins', couleur=vin.couleur) }}"
+       class="text-muted text-decoration-none">
+      ← Retour aux vins {{ vin.couleur|capitalize }}
+    </a>
+  </nav>
+
+  <div class="row g-5">
+
+    <!-- IMAGE -->
+    <div class="col-lg-5 text-center">
+      <img src="{{ url_for('static', filename='img/vins/arpents_resilience_2021_fiche.jpg') }}"
+           alt="{{ vin.nom }} {{ vin.annee }}"
+           class="img-fluid rounded shadow-sm"
+           style="max-height: 550px; object-fit: contain;">
+    </div>
+
+    <!-- CONTENU -->
+    <div class="col-lg-7">
+
+      <h1 class="fw-semibold mb-1">
+        {{ vin.nom }} {% if vin.annee %}({{ vin.annee }}){% endif %}
+      </h1>
+
+      <p class="text-muted mb-2">
+        {{ vin.domaine.nom }}
+        {% if vin.typologie %} · {{ vin.typologie }}{% endif %}
+      </p>
+
+      <!-- PRIX (discret, sans bouton) -->
+      <!--
+      <div class="mb-4">
+        <span class="fs-5 text-muted">
+          {{ vin.prix|int }} €
+        </span>
+      </div>
+      -->
+
+      <!-- PRÉSENTATION -->
+      {% if vin.description %}
+        <div class="mt-4">
+          <h2 class="h6 fw-semibold mb-2">Présentation</h2>
+          <p class="small text-muted">
+            {{ vin.description }}
+          </p>
+        </div>
+      {% endif %}
+
+      <!-- PROFIL -->
+      <div class="mt-4">
+        <h2 class="h6 fw-semibold mb-2">Profil</h2>
+        <p class="small text-muted mb-0">
+          Vin {{ vin.couleur|lower }} élaboré en {{ vin.annee }} par {{ vin.domaine.nom }}.
+          Il exprime finesse, structure et élégance.
+        </p>
+      </div>
+
+      <!-- ACCORDS -->
+      {% if vin.accord %}
+        <div class="mt-4">
+          <h2 class="h6 fw-semibold mb-2">Accords</h2>
+          <p class="small text-muted mb-0">
+            {{ vin.accord }}
+          </p>
+        </div>
+      {% endif %}
+    </div>
+      
+    <!-- SIGNATURE -->
+    <div class="mt-5 pt-5 border-top text-center">
+      <p class="small fst-italic text-muted mb-3">
+        Un vin choisi pour sa sincérité et la profondeur de son silence.
+      </p>
+
+      <!-- CTA en bas -->
+      <button class="btn btn-dark px-4 mt-2"
+              onclick="ajouterPanier({{ vin.id }})">
+        🛒 Ajouter au panier
+      </button>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

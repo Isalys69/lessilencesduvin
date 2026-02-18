@@ -3,7 +3,6 @@ Initialisation principale de l'application Flask.
 Gère la configuration, la base SQLite et l'enregistrement des Blueprints.
 """
 import os
-import sqlite3
 import logging
 from flask import Flask, g, request, redirect
 from flask_sqlalchemy import SQLAlchemy
@@ -27,24 +26,10 @@ login_manager.login_message_category = "warning"
 load_dotenv(os.path.join(os.path.dirname(__file__), "..", "config", ".env"))
 
 # Chemin DB unique, au niveau module (ne le redéfinis pas plus bas)
-DB_PATH = os.path.join(os.path.dirname(__file__), "data", "vins.db")
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+DATA_DIR = os.path.join(PROJECT_ROOT, "data")
+DB_PATH = os.path.join(DATA_DIR, "vins.db")
 
-
-# ───────────────────────────────────────────
-# 💾 Fonctions DB (compatibilité V1 / V2)
-# ───────────────────────────────────────────
-def get_db():
-    """Retourne la connexion SQLite, attachée au contexte Flask."""
-    if "db" not in g:
-        g.db = sqlite3.connect(DB_PATH)
-        g.db.row_factory = sqlite3.Row
-    return g.db
-
-def close_db(error=None):
-    """Ferme la connexion SQLite à la fin de chaque requête."""
-    db_conn = g.pop("db", None)
-    if db_conn is not None:
-        db_conn.close()
 
 
 # ───────────────────────────────────────────
@@ -58,7 +43,7 @@ def create_app():
 
     
     # 📜 Logger (fichier + console)
-    LOG_DIR = os.path.join(app.root_path, "data")
+    LOG_DIR = DATA_DIR
     LOG_PATH = os.path.join(LOG_DIR, "app.log")
     os.makedirs(LOG_DIR, exist_ok=True)
     logging.basicConfig(filename=LOG_PATH, level=logging.INFO,
@@ -68,29 +53,17 @@ def create_app():
     console_handler.setLevel(logging.INFO)
     logger.addHandler(console_handler)
 
-    # 🔌 SQLite (V1) — on garde simple, mais on prépare V3
-    USE_SQLALCHEMY = True  # Activation SQLAlchemy pour V3
-    if USE_SQLALCHEMY:
-        app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv(
-            'DATABASE_URL', f"sqlite:///{DB_PATH}"
-        )
-        app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-        db.init_app(app)
-        try:
-            with app.app_context():
-                db.session.execute(text('SELECT 1'))
-            logger.info("Connexion SQLAlchemy réussie")
-        except Exception as e:
-            logger.error(f"Erreur connexion SQLAlchemy : {e}")
-    else:
-        app.teardown_appcontext(close_db)
-        try:
-            conn = sqlite3.connect(DB_PATH)
-            conn.execute("SELECT 1")
-            conn.close()
-            logger.info(f"Connexion SQLite réussie ({DB_PATH})")
-        except Exception as e:
-            logger.error(f"Erreur connexion SQLite : {e}")
+    # 🔌 DB — SQLAlchemy (source de vérité = config.Config)
+    db.init_app(app)
+
+    try:
+        with app.app_context():
+            db.session.execute(text("SELECT 1"))
+        logger.info("Connexion SQLAlchemy réussie")
+    except Exception as e:
+        logger.error(f"Erreur connexion SQLAlchemy : {e}")
+
+
 
     # ───────────────────────────────────────
     # 🌐 Redirection HTTP → HTTPS

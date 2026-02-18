@@ -26,10 +26,12 @@ class Config:
     # ═══════════════════════════════════════════════════════════
     # 💾 BASE DE DONNÉES
     # ═══════════════════════════════════════════════════════════
-    BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-    DB_PATH = os.path.join(BASE_DIR, '..', 'app', 'data', 'vins.db')
-    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', f'sqlite:///{DB_PATH}')
+    PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    DATA_DIR = os.path.join(PROJECT_ROOT, "data")
+    DB_PATH = os.path.join(DATA_DIR, "vins.db")
+    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", f"sqlite:///{DB_PATH}")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+
     
     # ═══════════════════════════════════════════════════════════
     # 🔒 SESSIONS (sécurité des cookies)

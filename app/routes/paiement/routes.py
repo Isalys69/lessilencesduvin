@@ -80,27 +80,31 @@ def create_checkout_session():
     print(f"🧾 Commande {commande.id} créée (en attente, total TTC {total_ttc} €)")
 
     try:
-        # 🟢 Étape 2 : session Stripe (2 lignes : produits + livraison)
+        # 🟢 Étape 2 : session Stripe (produits + livraison si nécessaire)
+        line_items = [
+            {
+                "price_data": {
+                    "currency": "eur",
+                    "product_data": {"name": "Vins - Les Silences du Vin"},
+                    "unit_amount": subtotal_cents,
+                },
+                "quantity": 1,
+            }
+        ]
+
+        if shipping_cents > 0:
+            line_items.append({
+                "price_data": {
+                    "currency": "eur",
+                    "product_data": {"name": "Livraison (France métropolitaine)"},
+                    "unit_amount": shipping_cents,
+                },
+                "quantity": 1,
+            })
+
         stripe_session = stripe.checkout.Session.create(
             payment_method_types=["card"],
-            line_items=[
-                {
-                    "price_data": {
-                        "currency": "eur",
-                        "product_data": {"name": "Vins - Les Silences du Vin"},
-                        "unit_amount": subtotal_cents,
-                    },
-                    "quantity": 1,
-                },
-                {
-                    "price_data": {
-                        "currency": "eur",
-                        "product_data": {"name": "Livraison (France métropolitaine)"},
-                        "unit_amount": shipping_cents,
-                    },
-                    "quantity": 1,
-                },
-            ],
+            line_items=line_items,
             mode="payment",
             success_url=f"{base_url}/paiement/success?session_id={{CHECKOUT_SESSION_ID}}",
             cancel_url=f"{base_url}/paiement/cancel",

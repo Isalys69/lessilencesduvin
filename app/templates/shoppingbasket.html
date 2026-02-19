@@ -8,75 +8,105 @@
   </p>
 
   {% if items %}
-  <div class="table-responsive">
-    <table class="table table-bordered align-middle text-center">
-      <thead class="table-light">
-        <tr>
-          <th>Vin</th>
-          <th>Prix unitaire</th>
-          <th>Quantité</th>
-          <th>Sous-total</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for line in items %}
-        <tr>
-          <td class="fw-semibold">{{ line.nom }}</td>
-          <td>{{ "%.2f"|format(line.prix) }} €</td>
-          <td>
-            <form action="{{ url_for('panier.update_cart') }}" method="POST" class="d-inline">
-              <input type="hidden" name="vin_id" value="{{ line.vin_id }}">
-              <input type="hidden" name="action" value="decrease">
-              <button type="submit" class="btn btn-sm btn-outline-secondary">−</button>
-            </form>
 
-            <span class="mx-2">{{ line.qty }}</span>
+    <div class="table-responsive">
+      <table class="table table-bordered align-middle text-center">
+        <thead class="table-light">
+          <tr>
+            <th>Vin</th>
+            <th>Prix unitaire</th>
+            <th>Quantité</th>
+            <th>Sous-total</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for line in items %}
+          <tr>
+            <td class="fw-semibold">{{ line.nom }}</td>
+            <td>{{ "%.2f"|format(line.prix) }} €</td>
+            <td>
+              <form action="{{ url_for('panier.update_cart') }}" method="POST" class="d-inline">
+                <input type="hidden" name="vin_id" value="{{ line.vin_id }}">
+                <input type="hidden" name="action" value="decrease">
+                <button type="submit" class="btn btn-sm btn-outline-secondary">−</button>
+              </form>
 
-            <form action="{{ url_for('panier.update_cart') }}" method="POST" class="d-inline">
-              <input type="hidden" name="vin_id" value="{{ line.vin_id }}">
-              <input type="hidden" name="action" value="increase">
-              <button type="submit" class="btn btn-sm btn-outline-secondary">+</button>
-            </form>
-          </td>
-          <td>{{ "%.2f"|format(line.line_total) }} €</td>
-          <td>
-            <form action="{{ url_for('panier.update_cart') }}" method="POST" class="d-inline">
-              <input type="hidden" name="vin_id" value="{{ line.vin_id }}">
-              <input type="hidden" name="action" value="remove">
-              <button type="submit" class="btn btn-sm btn-outline-danger">Retirer</button>
-            </form>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+              <span class="mx-2">{{ line.qty }}</span>
 
-  <div class="text-end mt-4">
-    <h4>Total : <span class="fw-bold">{{ "%.2f"|format(total) }} €</span></h4>
-
-    <div class="d-inline-flex align-items-center gap-2 mt-2">
-      <form action="{{ url_for('panier.save_cart') }}" method="post" style="display:inline;">
-        <button
-          id="btn-save-cart"
-          type="submit"
-          class="btn btn-outline-dark px-4 {% if not current_user.is_authenticated %}disabled-btn{% endif %}">
-          💾 Enregistrer mon panier
-        </button>
-
-      </form>
-
-      <button type="button" id="checkout-button" class="btn btn-dark px-4 ms-2">Payer</button>
+              <form action="{{ url_for('panier.update_cart') }}" method="POST" class="d-inline">
+                <input type="hidden" name="vin_id" value="{{ line.vin_id }}">
+                <input type="hidden" name="action" value="increase">
+                <button type="submit" class="btn btn-sm btn-outline-secondary">+</button>
+              </form>
+            </td>
+            <td>{{ "%.2f"|format(line.line_total) }} €</td>
+            <td>
+              <form action="{{ url_for('panier.update_cart') }}" method="POST" class="d-inline">
+                <input type="hidden" name="vin_id" value="{{ line.vin_id }}">
+                <input type="hidden" name="action" value="remove">
+                <button type="submit" class="btn btn-sm btn-outline-danger">Retirer</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
 
-    <p id="save-msg" class="text-success fw-semibold mt-3" style="display:none;"></p>
-  </div>
+    <div class="mt-4 d-flex">
+      <!-- Bloc récap -->
+      <div class="text-start" style="min-width: 320px;">
+        <div>Sous-total : <span class="fw-bold">{{ "%.2f"|format(subtotal) }} €</span></div>
+
+        <div>
+          Frais de livraison :
+          <span class="fw-bold">
+            {% if shipping == 0 %}
+              Offerts
+            {% else %}
+              {{ "%.2f"|format(shipping) }} €
+            {% endif %}
+          </span>
+        </div>
+
+        <hr class="my-2">
+
+        <div class="fs-5 mt-3">
+          Total TTC : <span class="fw-bold">{{ "%.2f"|format(total_ttc) }} €</span>
+        </div>
+
+        <small class="text-muted d-block mt-1">
+          Livraison gratuite à partir de {{ "%.0f"|format(free_shipping_threshold) }} € (France métropolitaine).
+        </small>
+      </div>
+
+      <!-- Bloc boutons -->
+      <div class="flex-grow-1 d-flex justify-content-center align-items-end mt-4">
+        <div class="d-flex gap-3 mt-2">
+          <form action="{{ url_for('panier.save_cart') }}" method="post">
+            <button
+              id="btn-save-cart"
+              type="submit"
+              class="btn btn-outline-dark px-3 {% if not current_user.is_authenticated %}disabled-btn{% endif %}">
+              💾 Enregistrer mon panier
+            </button>
+          </form>
+
+          <button type="button" id="checkout-button" class="btn btn-dark px-4">
+            Payer
+          </button>
+        </div>
+      </div>
+      <div>
+        <p id="save-msg" class="text-success fw-semibold mt-3" style="display:none;"></p>
+      </div>
+    </div>
 
   {% else %}
-  <div class="alert alert-info text-center">
-    Votre panier est vide pour le moment.
-  </div>
+    <div class="alert alert-info text-center">
+      Votre panier est vide pour le moment.
+    </div>
   {% endif %}
 </div>
 
@@ -86,20 +116,10 @@
 
   document.getElementById("checkout-button").addEventListener("click", function () {
     fetch("/paiement/create-checkout-session", { method: "POST" })
-      .then(function (response) {
-        return response.json();
-      })
-      .then(function (session) {
-        return stripe.redirectToCheckout({ sessionId: session.id });
-      })
-      .then(function (result) {
-        if (result.error) {
-          alert(result.error.message);
-        }
-      })
-      .catch(function (error) {
-        console.error("Error:", error);
-      });
+      .then(function (response) { return response.json(); })
+      .then(function (session) { return stripe.redirectToCheckout({ sessionId: session.id }); })
+      .then(function (result) { if (result.error) { alert(result.error.message); } })
+      .catch(function (error) { console.error("Error:", error); });
   });
 </script>
 
@@ -110,7 +130,7 @@
       e.preventDefault();
       fetch('/auth/flash-login-info')
         .then(res => res.json())
-        .then(data => alert(data.message)); // ou mieux : flash message
+        .then(data => alert(data.message));
     });
   }
 </script>

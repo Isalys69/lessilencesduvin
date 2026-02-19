@@ -1,10 +1,19 @@
 import os
 import json
 from flask import Blueprint, render_template, request, jsonify,redirect,url_for, flash
-from app.utils.panier_tools import get_session_panier, set_session_panier, get_compteur_panier
 from flask_login import current_user, login_required
 from app.models.panier_sauvegarde import PanierSauvegarde
 from app import db
+from decimal import Decimal
+from app.utils.panier_tools import (
+    get_session_panier,
+    set_session_panier,
+    get_compteur_panier,
+    compute_shipping,
+    money2,
+    FREE_SHIPPING_THRESHOLD
+)
+
 
 panier_bp = Blueprint('panier', __name__, url_prefix='/panier')
 
@@ -14,26 +23,41 @@ panier_bp = Blueprint('panier', __name__, url_prefix='/panier')
 
 # 🔹 Fonction utilitaire interne (un seul rendu du panier)
 def render_panier():
-
     stripe_public_key = os.getenv("STRIPE_PUBLIC_KEY")
 
-    panier=get_session_panier()
+    panier = get_session_panier()
     items = [
         {
             'vin_id': i['vin_id'],
             'nom': i['nom'],
-            'prix': i['prix'],
+            'prix': float(i['prix']),  # on garde float pour l'affichage ligne si tu veux
             'qty': i['qty'],
-            'line_total': i['prix'] * i['qty']
+            'line_total': float(i['prix']) * i['qty']
         }
         for i in panier
     ]
-    total = sum(i['line_total'] for i in items)
+
+    # ✅ Totaux en Decimal (fiables)
+    subtotal = sum((Decimal(str(i['prix'])) * Decimal(str(i['qty']))) for i in panier) if panier else Decimal("0.00")
+    subtotal = money2(subtotal)
+
+    shipping = compute_shipping(subtotal)
+    shipping = money2(shipping)
+
+    total_ttc = money2(subtotal + shipping)
+
     compteur = get_compteur_panier()
 
-
-
-    return render_template('shoppingbasket.html', items=items, total=total, compteur=compteur, stripe_public_key=stripe_public_key)
+    return render_template(
+        'shoppingbasket.html',
+        items=items,
+        subtotal=float(subtotal),
+        shipping=float(shipping),
+        total_ttc=float(total_ttc),
+        free_shipping_threshold=float(FREE_SHIPPING_THRESHOLD),
+        compteur=compteur,
+        stripe_public_key=stripe_public_key
+    )
 
 
 

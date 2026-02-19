@@ -10,6 +10,8 @@ from app.forms.checkout import GuestCheckoutForm
 from app.utils.panier_tools import get_session_panier
 from app.utils.email import send_plain_email
 
+from decimal import Decimal
+from app.utils.panier_tools import money2, compute_shipping
 
 
 # ======================================================
@@ -43,23 +45,30 @@ def create_checkout_session():
         flash("Votre panier est vide.", "warning")
         return redirect(url_for('catalogue.index'))
 
-    total = sum(i['prix'] * i['qty'] for i in panier)
-    montant_cents = int(float(total) * 100)
-
-    # Détection de l’environnement (local ou production)
+    # ✅ Base URL (local vs prod)
     if request.host.startswith("127.0.0.1") or "localhost" in request.host:
         base_url = "http://127.0.0.1:5000"
     else:
         base_url = "https://www.lessilencesduvin.fr"
 
-    # =====================================================
-    # 🧾 Étape 1 : Création d'une commande "en attente"
-    # -----------------------------------------------------
-    # ➜ On ne demande aucune coordonnée ici
-    # ➜ Juste le montant et le statut
-    # =====================================================
+    # ✅ Calcul robustes (mêmes règles que le panier)
+    from decimal import Decimal
+    from app.utils.panier_tools import money2, compute_shipping
+
+    subtotal = Decimal("0.00")
+    for i in panier:
+        subtotal += Decimal(str(i["prix"])) * Decimal(str(i["qty"]))
+    subtotal = money2(subtotal)
+
+    shipping = money2(compute_shipping(subtotal))
+    total_ttc = money2(subtotal + shipping)
+
+    subtotal_cents = int(subtotal * 100)
+    shipping_cents = int(shipping * 100)
+
+    # 🧾 Étape 1 : création commande "en attente" avec le TOTAL TTC (produits + livraison)
     commande = Commande(
-        total_ttc=total,
+        total_ttc=float(total_ttc),
         statut='en_attente',
         date_commande=datetime.utcnow()
     )
@@ -68,38 +77,47 @@ def create_checkout_session():
 
     # Stocker temporairement dans la session Flask
     flask_session['commande_id'] = commande.id
-
-    print(f"🧾 Commande {commande.id} créée (en attente, total {total} €)")
+    print(f"🧾 Commande {commande.id} créée (en attente, total TTC {total_ttc} €)")
 
     try:
-        # =====================================================
-        # 🟢 Étape 2 : Création de la session Stripe
-        # =====================================================
+        # 🟢 Étape 2 : session Stripe (2 lignes : produits + livraison)
         stripe_session = stripe.checkout.Session.create(
             payment_method_types=["card"],
-            line_items=[{
-                "price_data": {
-                    "currency": "eur",
-                    "product_data": {"name": "Les Silences du Vin"},
-                    "unit_amount": montant_cents,
+            line_items=[
+                {
+                    "price_data": {
+                        "currency": "eur",
+                        "product_data": {"name": "Vins - Les Silences du Vin"},
+                        "unit_amount": subtotal_cents,
+                    },
+                    "quantity": 1,
                 },
-                "quantity": 1,
-            }],
+                {
+                    "price_data": {
+                        "currency": "eur",
+                        "product_data": {"name": "Livraison (France métropolitaine)"},
+                        "unit_amount": shipping_cents,
+                    },
+                    "quantity": 1,
+                },
+            ],
             mode="payment",
             success_url=f"{base_url}/paiement/success?session_id={{CHECKOUT_SESSION_ID}}",
             cancel_url=f"{base_url}/paiement/cancel",
+            metadata={
+                "commande_id": str(commande.id),
+                "subtotal_eur": str(subtotal),
+                "shipping_eur": str(shipping),
+                "total_ttc_eur": str(total_ttc),
+            }
         )
 
-        # =====================================================
-        # 🔗 Étape 3 : Lier la commande à la session Stripe
-        # =====================================================
+        # 🔗 Étape 3 : lier commande ↔ Stripe session
         commande.stripe_session_id = stripe_session.id
         db.session.commit()
         print(f"🔗 Commande {commande.id} liée à Stripe {stripe_session.id}")
 
-        # =====================================================
-        # 🚀 Étape 4 : Retour JSON pour front ou redirection directe
-        # =====================================================
+        # 🚀 Retour JSON pour le front (Stripe redirect)
         return jsonify({"id": stripe_session.id})
 
     except Exception as e:

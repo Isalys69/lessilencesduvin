@@ -1,5 +1,15 @@
 
 from flask import session
+from decimal import Decimal, ROUND_HALF_UP
+
+FREE_SHIPPING_THRESHOLD = Decimal("100.00")
+SHIPPING_FEE = Decimal("9.90")
+
+def compute_shipping(subtotal_eur: Decimal) -> Decimal:
+    return Decimal("0.00") if subtotal_eur >= FREE_SHIPPING_THRESHOLD else SHIPPING_FEE
+
+def money2(x: Decimal) -> Decimal:
+    return x.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
 def get_session_panier():
     """Retourne le panier stocké dans la session, ou une liste vide."""

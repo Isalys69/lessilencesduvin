@@ -1,5 +1,14 @@
 {% extends "base.html" %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/shoppingmarket.css') }}?v=1">
+{% endblock %}
+
+
+
 {% block content %}
+
+
 
 <div class="container my-5">
   <h1 class="text-center mb-4">Votre panier des vins</h1>
@@ -54,36 +63,53 @@
       </table>
     </div>
 
-    <div class="mt-4 d-flex">
-      <!-- Bloc récap -->
-      <div class="text-start" style="min-width: 320px;">
+    <div class="row mt-4 align-items-end">
+      <!-- Col gauche : récap -->
+      <div class="col-md-6 text-start" style="min-width: 320px;">
         <div>Sous-total : <span class="fw-bold">{{ "%.2f"|format(subtotal) }} €</span></div>
 
         <div>
           Frais de livraison :
-          <span class="fw-bold">
-            {% if shipping == 0 %}
-              Offerts
-            {% else %}
-              {{ "%.2f"|format(shipping) }} €
-            {% endif %}
-          </span>
+          {% if shipping == 0 %}
+            <span class="fw-bold">Offerts</span>
+          {% else %}
+            <span class="fw-bold">{{ "%.2f"|format(shipping) }} €</span>
+            <span>
+              <small class="text-muted ">
+                (Livraison gratuite à partir de {{ "%.0f"|format(free_shipping_threshold) }} €)
+              </small>
+            </span>
+          {% endif %}
+        </div>        
+        
+        <div class="mt-2">
+          <small class="d-block">
+            <strong>Délai de livraison : </strong>
+            5 jours ouvrés maximum (France   métropolitaine).
+          </small>        
         </div>
+
 
         <hr class="my-2">
 
         <div class="fs-5 mt-3">
           Total TTC : <span class="fw-bold">{{ "%.2f"|format(total_ttc) }} €</span>
         </div>
-
-        <small class="text-muted d-block mt-1">
-          Livraison gratuite à partir de {{ "%.0f"|format(free_shipping_threshold) }} € (France métropolitaine).
-        </small>
       </div>
 
-      <!-- Bloc boutons -->
-      <div class="flex-grow-1 d-flex justify-content-center align-items-end mt-4">
-        <div class="d-flex gap-3 mt-2">
+      <!-- Col droite : CGV + boutons -->
+      <div class="col-md-6 d-flex flex-column align-items-end mt-3 mt-md-0">
+        <!-- Case CGV : juste au-dessus du CTA -->
+        <div class="form-check mb-2">
+          <input class="form-check-input" type="checkbox" id="accept-cgv">
+          <label class="form-check-label" for="accept-cgv">
+            J’ai lu et j’accepte les
+            <a href="{{ url_for('legales.cgv') }}" target="_blank" rel="noopener">Conditions Générales de Vente</a>
+
+          </label>
+        </div>
+
+        <div class="d-flex gap-3">
           <form action="{{ url_for('panier.save_cart') }}" method="post">
             <button
               id="btn-save-cart"
@@ -93,12 +119,11 @@
             </button>
           </form>
 
-          <button type="button" id="checkout-button" class="btn btn-dark px-4">
-            Payer
+          <button type="button" id="checkout-button" class="btn btn-dark px-4" disabled>
+            Valider et payer
           </button>
         </div>
-      </div>
-      <div>
+
         <p id="save-msg" class="text-success fw-semibold mt-3" style="display:none;"></p>
       </div>
     </div>
@@ -133,6 +158,18 @@
         .then(data => alert(data.message));
     });
   }
+</script>
+
+<script>
+  const cgvCheckbox = document.getElementById("accept-cgv");
+  const checkoutBtn = document.getElementById("checkout-button");
+
+  function syncCheckoutState() {
+    checkoutBtn.disabled = !cgvCheckbox.checked;
+  }
+
+  syncCheckoutState();
+  cgvCheckbox.addEventListener("change", syncCheckoutState);
 </script>
 
 {% endblock %}

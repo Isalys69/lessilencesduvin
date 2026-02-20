@@ -59,8 +59,6 @@ def render_panier():
         stripe_public_key=stripe_public_key
     )
 
-
-
 @panier_bp.route('/')
 def index():
     return render_panier()

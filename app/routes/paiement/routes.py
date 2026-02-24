@@ -72,8 +72,22 @@ def create_checkout_session():
         statut='en_attente',
         date_commande=datetime.utcnow()
     )
+
+
     db.session.add(commande)
     db.session.commit()
+
+    # 🔒 Étape 1 bis : figer les lignes du panier dans la commande
+    for item in panier:
+        ligne = CommandeProduit(
+            commande_id=commande.id,
+            produit_id=item["vin_id"],
+            quantite=int(item["qty"]),
+            prix_unitaire=float(item["prix"])
+        )
+        db.session.add(ligne)
+    db.session.commit()
+
 
     # Stocker temporairement dans la session Flask
     flask_session['commande_id'] = commande.id
@@ -152,11 +166,99 @@ def stripe_webhook():
     # Événement : paiement validé
     if event['type'] == 'checkout.session.completed':
         session_stripe = event['data']['object']
-        commande = Commande.query.filter_by(stripe_session_id=session_stripe['id']).first()
-        if commande:
+
+
+        stripe_session_id = session_stripe['id']
+        payment_intent_id = session_stripe.get('payment_intent')
+
+        commande = Commande.query.filter_by(stripe_session_id=stripe_session_id).first()
+        if not commande:
+            current_app.logger.error(f"[WEBHOOK] Commande introuvable pour stripe_session_id={stripe_session_id}")
+            return '', 200  # Stripe retry si besoin, on ne veut pas 500
+
+        # ✅ Idempotence : Stripe peut renvoyer l'événement
+        if commande.statut in ('payé', 'echec_stock'):
+            current_app.logger.info(f"[WEBHOOK] Commande {commande.id} déjà traitée (statut={commande.statut})")
+            return '', 200
+
+        # Charger les lignes figées en base
+        lignes = CommandeProduit.query.filter_by(commande_id=commande.id).all()
+        if not lignes:
+            current_app.logger.error(f"[WEBHOOK] Commande {commande.id} sans lignes produits -> echec_stock + remboursement")
+
+            commande.statut = 'echec_stock'
+            db.session.commit()
+
+            if payment_intent_id:
+                try:
+                    stripe.Refund.create(payment_intent=payment_intent_id)
+                except Exception as e:
+                    current_app.logger.error(f"[WEBHOOK] Refund échoué commande {commande.id}: {type(e).__name__} - {e}")
+
+            return '', 200
+
+        # ✅ Tentative de décrémentation stock atomique (transaction DB)
+        try:
+            from sqlalchemy import update
+            with db.session.begin():
+                for l in lignes:
+                    vin_id = int(l.produit_id)
+                    qty = int(l.quantite)
+
+                    # Décrémentation atomique conditionnelle : stock >= qty
+                    stmt = (
+                        update(Vin)
+                        .where(Vin.id == vin_id)
+                        .where(Vin.is_active == True)
+                        .where(Vin.stock >= qty)
+                        .values(stock=Vin.stock - qty)
+                    )
+                    result = db.session.execute(stmt)
+                    if result.rowcount != 1:
+                        # Stock insuffisant (ou vin inactif) -> on déclenche l'échec
+                        raise ValueError(f"Stock insuffisant pour vin_id={vin_id}, qty={qty}")
+
+            # Si on arrive ici, tout le stock a été consommé avec succès
             commande.statut = 'payé'
             db.session.commit()
-            print(f"✅ Commande {commande.id} marquée comme payée (via Webhook).")
+            current_app.logger.info(f"[WEBHOOK] Commande {commande.id} -> payé (stock décrémenté OK)")
+
+        except Exception as e:
+            # Stock KO => echec_stock + refund
+            current_app.logger.warning(f"[WEBHOOK] Commande {commande.id} -> echec_stock ({type(e).__name__}: {e})")
+
+            # ⚠️ Important : la transaction stock a été rollback par le context manager
+            commande.statut = 'echec_stock'
+            db.session.commit()
+
+            if payment_intent_id:
+                try:
+                    stripe.Refund.create(payment_intent=payment_intent_id)
+                    current_app.logger.info(f"[WEBHOOK] Refund déclenché pour commande {commande.id}")
+                except Exception as re:
+                    current_app.logger.error(f"[WEBHOOK] Refund échoué commande {commande.id}: {type(re).__name__} - {re}")
+
+            # Option : email justificatif si email déjà connu (souvent pas le cas chez toi)
+            if commande.email_client:
+                try:
+                    body = (
+                        f"Bonjour,\n\n"
+                        f"Votre commande #{commande.id} a été remboursée automatiquement.\n"
+                        f"Motif : le vin a été vendu simultanément et le stock n'était plus suffisant.\n\n"
+                        f"Le remboursement a été initié immédiatement. Selon votre banque, il peut apparaître sous quelques jours.\n\n"
+                        f"Les Silences du Vin"
+                    )
+                    send_plain_email(
+                        subject="Remboursement automatique – rupture de stock",
+                        body=body,
+                        sender=current_app.config['MAIL_USERNAME'],
+                        recipients=[commande.email_client],
+                        reply_to="contact@lessilencesduvin.com"
+                    )
+                except Exception as me:
+                    current_app.logger.error(f"[WEBHOOK] Erreur email remboursement commande {commande.id}: {type(me).__name__} - {me}")
+
+        return '', 200
 
     return '', 200
 
@@ -241,11 +343,15 @@ def success():
         print("⚠️ Aucune commande trouvée pour cette session Stripe.")
         return render_template('paiement/cancel.html')
 
-    # Si la commande n’est pas encore marquée comme payée
+    # ✅ /success ne décide pas du statut: le webhook est l'autorité
+    if commande.statut == 'echec_stock':
+        flash("Désolé, le stock n'était plus disponible. Votre paiement a été remboursé automatiquement.", "warning")
+        return render_template('paiement/cancel.html')
+
     if commande.statut != 'payé':
-        commande.statut = 'payé'
-        db.session.commit()
-        print(f"✅ Commande {commande.id} marquée comme payée.")
+        # webhook pas encore passé (délai), ou commande encore en_attente
+        flash("Votre paiement est en cours de confirmation. Veuillez patienter quelques secondes et rafraîchir la page.", "warning")
+        return render_template('paiement/cancel.html')
 
     # Stocker l'ID dans la session Flask
     flask_session['commande_id'] = commande.id

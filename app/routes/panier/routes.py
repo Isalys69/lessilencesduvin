@@ -3,6 +3,7 @@ import json
 from flask import Blueprint, render_template, request, jsonify,redirect,url_for, flash
 from flask_login import current_user, login_required
 from app.models.panier_sauvegarde import PanierSauvegarde
+from app.models.vin import Vin
 from app import db
 from decimal import Decimal
 from app.utils.panier_tools import (
@@ -63,7 +64,6 @@ def render_panier():
 def index():
     return render_panier()
 
-from app.models.vin import Vin  # si pas déjà importé
 
 @panier_bp.route('/ajouter', methods=['POST'])
 def ajouter():

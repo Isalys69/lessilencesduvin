@@ -7,6 +7,7 @@ from flask_login import current_user
 from app import db
 from app.models.commandes import Commande, CommandeProduit
 from app.forms.checkout import GuestCheckoutForm
+from app.models.vin import Vin
 from app.utils.panier_tools import get_session_panier
 from app.utils.email import send_plain_email
 

@@ -18,5 +18,4 @@ class GuestCheckoutForm(FlaskForm):
     code_postal_facturation = StringField('CP facturation')
     ville_facturation = StringField('Ville facturation')
 
-    accept_cgv = BooleanField("J'ai lu et j’accepte les CGV", validators=[DataRequired()])
     submit = SubmitField('Procéder au paiement')

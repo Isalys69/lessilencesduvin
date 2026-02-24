@@ -197,37 +197,34 @@ def stripe_webhook():
 
             return '', 200
 
-        # ✅ Tentative de décrémentation stock atomique (transaction DB)
+        from sqlalchemy import update
+
+        # ✅ Tentative de décrémentation stock atomique (sans db.session.begin())
         try:
-            from sqlalchemy import update
-            with db.session.begin():
-                for l in lignes:
-                    vin_id = int(l.produit_id)
-                    qty = int(l.quantite)
+            for l in lignes:
+                vin_id = int(l.produit_id)
+                qty = int(l.quantite)
 
-                    # Décrémentation atomique conditionnelle : stock >= qty
-                    stmt = (
-                        update(Vin)
-                        .where(Vin.id == vin_id)
-                        .where(Vin.is_active == True)
-                        .where(Vin.stock >= qty)
-                        .values(stock=Vin.stock - qty)
-                    )
-                    result = db.session.execute(stmt)
-                    if result.rowcount != 1:
-                        # Stock insuffisant (ou vin inactif) -> on déclenche l'échec
-                        raise ValueError(f"Stock insuffisant pour vin_id={vin_id}, qty={qty}")
+                stmt = (
+                    update(Vin)
+                    .where(Vin.id == vin_id)
+                    .where(Vin.is_active == True)
+                    .where(Vin.stock >= qty)
+                    .values(stock=Vin.stock - qty)
+                )
+                result = db.session.execute(stmt)
+                if result.rowcount != 1:
+                    raise ValueError(f"Stock insuffisant pour vin_id={vin_id}, qty={qty}")
 
-            # Si on arrive ici, tout le stock a été consommé avec succès
+            # Si tout est OK, on valide stock + statut
             commande.statut = 'payé'
             db.session.commit()
             current_app.logger.info(f"[WEBHOOK] Commande {commande.id} -> payé (stock décrémenté OK)")
 
         except Exception as e:
-            # Stock KO => echec_stock + refund
-            current_app.logger.warning(f"[WEBHOOK] Commande {commande.id} -> echec_stock ({type(e).__name__}: {e})")
+            db.session.rollback()
 
-            # ⚠️ Important : la transaction stock a été rollback par le context manager
+            current_app.logger.warning(f"[WEBHOOK] Commande {commande.id} -> echec_stock ({type(e).__name__}: {e})")
             commande.statut = 'echec_stock'
             db.session.commit()
 
@@ -238,7 +235,10 @@ def stripe_webhook():
                 except Exception as re:
                     current_app.logger.error(f"[WEBHOOK] Refund échoué commande {commande.id}: {type(re).__name__} - {re}")
 
+
             # Option : email justificatif si email déjà connu (souvent pas le cas chez toi)
+
+
             if commande.email_client:
                 try:
                     body = (

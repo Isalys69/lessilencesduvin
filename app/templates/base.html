@@ -23,7 +23,7 @@
     {% if messages %}
       <div class="container mt-3">
         {% for category, message in messages %}
-          <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show" role="alert">
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">            
             {{ message }}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
           </div>
@@ -196,17 +196,36 @@
 </script>
 
 <script>
-  function majCompteurPanier() {
-    fetch("/panier/compteur")
-      .then(res => res.json())
-      .then(data => {
-        const compteur = document.getElementById("compteur-panier");
-        if (compteur) compteur.textContent = data.compteur;
-      })
-      .catch(err => console.error("Erreur mise à jour compteur :", err));
-  }
+function ajouterPanier(id) {
+  fetch('/panier/ajouter', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ vin_id: id })
+  })
+  .then(async (res) => {
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      window.location.reload();
+      return;
+    }    
+
+    majCompteurPanier();
+  })
+  .catch(err => console.error('Erreur panier :', err));
+}
 </script>
 
+<script>
+function majCompteurPanier() {
+  fetch("/panier/compteur")
+    .then(res => res.json())
+    .then(data => {
+      const compteur = document.getElementById("compteur-panier");
+      if (compteur) compteur.textContent = data.compteur;
+    })
+    .catch(err => console.error("Erreur mise à jour compteur :", err));
+}
+</script>
 
 </body>
 </html>

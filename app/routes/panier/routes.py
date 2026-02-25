@@ -76,6 +76,27 @@ def ajouter():
     if not vin:
         return jsonify({"error": "Vin introuvable"}), 404
 
+
+    # 🔒 Blocage V1 : impossible de dépasser le stock réel
+    if vin.stock <= 0:
+        return jsonify({
+            "error": "stock_insuffisant",
+            "message": "Ce vin est en rupture.",
+            "stock_dispo": int(vin.stock),
+            "qty_actuelle": 0
+        }), 409
+
+    qty_actuelle = 0
+    for it in panier:
+        if int(it.get("vin_id")) == vin_id:
+            qty_actuelle = int(it.get("qty", 0))
+            break
+
+    if qty_actuelle + 1 > int(vin.stock):
+        flash(f"Stock limité : {vin.stock} bouteille(s) disponible(s).", "warning")
+        return jsonify({"error": "stock_insuffisant"}), 409
+
+
     nom = vin.nom
     prix = float(vin.prix)
 
@@ -110,8 +131,16 @@ def update_cart():
 
     for item in panier:
         if str(item['vin_id']) == str(vin_id):
+
             if action == 'increase':
-                item['qty'] += 1
+                vin = Vin.query.get(int(item["vin_id"]))
+                if not vin or not vin.is_active:
+                    flash("Ce vin n'est plus disponible.", "warning")
+                elif int(item['qty']) + 1 > int(vin.stock):
+                    flash(f"Stock limité : {vin.stock} bouteille(s) disponible(s).", "warning")
+                else:
+                    item['qty'] += 1
+
             elif action == 'decrease':
                 item['qty'] -= 1
             elif action == 'remove':

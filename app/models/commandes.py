@@ -32,6 +32,15 @@ class Commande(db.Model):
     total_ttc = db.Column(db.Float, nullable=True)
     devise = db.Column(db.String(3), default='EUR')
     stripe_session_id = db.Column(db.String)
+
+    # Stripe / idempotence
+    stripe_payment_intent_id = db.Column(db.String(255), nullable=True, index=True)
+
+    # Refund idempotent (anti double remboursement)
+    refund_effectue = db.Column(db.Boolean, default=False, nullable=False)
+    stripe_refund_id = db.Column(db.String(255), nullable=True, index=True)
+    date_refund = db.Column(db.DateTime, nullable=True)
+    
     statut = db.Column(db.String(50), default='en_attente')
     date_commande = db.Column(db.DateTime, default=datetime.utcnow)
 

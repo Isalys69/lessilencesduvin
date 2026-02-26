@@ -41,6 +41,7 @@ env/
 # 🗄️ BASES DE DONNÉES (JAMAIS VERSIONNÉES)
 # ==================================================
 *.db
+*.db.*
 *.sqlite
 *.sqlite3
 *.db.backup.*
@@ -48,6 +49,7 @@ env/
 
 # Cas explicites (lisibilité & sécurité)
 app/data/*.db
+app/data/*.db.*
 app/data/*.db.backup.*
 instance/*.db
 instance/*.sqlite*

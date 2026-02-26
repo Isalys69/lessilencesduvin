@@ -6,6 +6,8 @@ from flask_login import current_user
 
 from app import db
 from app.models.commandes import Commande, CommandeProduit
+from app.models.stripe_event import StripeEvent
+
 from app.forms.checkout import GuestCheckoutForm
 from app.models.vin import Vin
 from app.utils.panier_tools import get_session_panier
@@ -14,6 +16,7 @@ from app.utils.email import send_plain_email
 from decimal import Decimal
 from app.utils.panier_tools import money2, compute_shipping
 
+from sqlalchemy.exc import IntegrityError
 
 # ======================================================
 # 🧭 Blueprint Paiement
@@ -163,106 +166,151 @@ def stripe_webhook():
         )
     except stripe.error.SignatureVerificationError:
         return "Signature Stripe invalide", 400
+    except Exception as e:
+        current_app.logger.error(f"[WEBHOOK] Erreur construct_event: {type(e).__name__} - {e}")
+        return "Webhook invalide", 400
 
-    # Événement : paiement validé
-    if event['type'] == 'checkout.session.completed':
-        session_stripe = event['data']['object']
+    # On ne traite que cet event en V1
+    if event.get('type') != 'checkout.session.completed':
+        return '', 200
 
+    session_stripe = event['data']['object']
 
-        stripe_session_id = session_stripe['id']
-        payment_intent_id = session_stripe.get('payment_intent')
+    # --- Stripe IDs ---
+    event_id = event.get("id")
+    stripe_session_id = session_stripe.get("id")
+    payment_intent_id = session_stripe.get("payment_intent")
 
-        commande = Commande.query.filter_by(stripe_session_id=stripe_session_id).first()
-        if not commande:
-            current_app.logger.error(f"[WEBHOOK] Commande introuvable pour stripe_session_id={stripe_session_id}")
-            return '', 200  # Stripe retry si besoin, on ne veut pas 500
+    if not event_id or not stripe_session_id:
+        current_app.logger.error(f"[WEBHOOK] event_id ou stripe_session_id manquant (event_id={event_id}, session_id={stripe_session_id})")
+        return '', 200
 
-        # ✅ Idempotence : Stripe peut renvoyer l'événement
-        if commande.statut in ('payé', 'echec_stock'):
-            current_app.logger.info(f"[WEBHOOK] Commande {commande.id} déjà traitée (statut={commande.statut})")
-            return '', 200
+    # ✅ Barrière #1 : idempotence Stripe par event.id (UNIQUE)
+    # Si Stripe rejoue le même event, l'insert échoue -> on retourne 200 immédiatement.
+    from sqlalchemy.exc import IntegrityError
+    try:
+        db.session.add(StripeEvent(
+            event_id=event_id,
+            event_type=event.get("type"),
+            stripe_session_id=stripe_session_id
+        ))
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        current_app.logger.info(f"[WEBHOOK] Duplicate event ignoré event_id={event_id}")
+        return '', 200
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"[WEBHOOK] Erreur insert stripe_events event_id={event_id}: {type(e).__name__} - {e}")
+        return '', 200
 
-        # Charger les lignes figées en base
-        lignes = CommandeProduit.query.filter_by(commande_id=commande.id).all()
-        if not lignes:
-            current_app.logger.error(f"[WEBHOOK] Commande {commande.id} sans lignes produits -> echec_stock + remboursement")
+    # Récupération commande
+    commande = Commande.query.filter_by(stripe_session_id=stripe_session_id).first()
+    if not commande:
+        current_app.logger.error(f"[WEBHOOK] Commande introuvable pour stripe_session_id={stripe_session_id} (event_id={event_id})")
+        return '', 200
 
-            commande.statut = 'echec_stock'
-            db.session.commit()
+    # (optionnel mais utile) : relier l'event à la commande pour audit
+    try:
+        StripeEvent.query.filter_by(event_id=event_id).update({"commande_id": commande.id})
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
 
-            if payment_intent_id:
-                try:
-                    stripe.Refund.create(payment_intent=payment_intent_id)
-                except Exception as e:
-                    current_app.logger.error(f"[WEBHOOK] Refund échoué commande {commande.id}: {type(e).__name__} - {e}")
+    # 🔗 Audit : mémoriser payment_intent sur la commande
+    if payment_intent_id and commande.stripe_payment_intent_id != payment_intent_id:
+        commande.stripe_payment_intent_id = payment_intent_id
+        db.session.commit()
 
-            return '', 200
+    # ✅ Barrière #2 : garde métier (filet)
+    if commande.statut in ('payé', 'complétée', 'echec_stock'):
+        current_app.logger.info(f"[WEBHOOK] Commande {commande.id} déjà traitée (statut={commande.statut}) event_id={event_id}")
+        return '', 200
 
-        from sqlalchemy import update
-
-        # ✅ Tentative de décrémentation stock atomique (sans db.session.begin())
+    # Helper refund idempotent
+    def _safe_refund(commande_obj, payment_intent):
+        if not payment_intent:
+            return
+        if commande_obj.refund_effectue:
+            current_app.logger.info(
+                f"[WEBHOOK] Refund déjà effectué commande {commande_obj.id} refund_id={commande_obj.stripe_refund_id}"
+            )
+            return
         try:
-            for l in lignes:
-                vin_id = int(l.produit_id)
-                qty = int(l.quantite)
-
-                stmt = (
-                    update(Vin)
-                    .where(Vin.id == vin_id)
-                    .where(Vin.is_active == True)
-                    .where(Vin.stock >= qty)
-                    .values(stock=Vin.stock - qty)
-                )
-                result = db.session.execute(stmt)
-                if result.rowcount != 1:
-                    raise ValueError(f"Stock insuffisant pour vin_id={vin_id}, qty={qty}")
-
-            # Si tout est OK, on valide stock + statut
-            commande.statut = 'payé'
+            refund = stripe.Refund.create(payment_intent=payment_intent)
+            commande_obj.refund_effectue = True
+            commande_obj.stripe_refund_id = refund.get("id")
+            commande_obj.date_refund = datetime.utcnow()
             db.session.commit()
-            current_app.logger.info(f"[WEBHOOK] Commande {commande.id} -> payé (stock décrémenté OK)")
-
+            current_app.logger.info(f"[WEBHOOK] Refund OK commande {commande_obj.id} refund_id={commande_obj.stripe_refund_id}")
         except Exception as e:
-            db.session.rollback()
+            current_app.logger.error(f"[WEBHOOK] Refund échoué commande {commande_obj.id}: {type(e).__name__} - {e}")
 
-            current_app.logger.warning(f"[WEBHOOK] Commande {commande.id} -> echec_stock ({type(e).__name__}: {e})")
-            commande.statut = 'echec_stock'
-            db.session.commit()
+    # Charger les lignes figées en base
+    lignes = CommandeProduit.query.filter_by(commande_id=commande.id).all()
+    if not lignes:
+        current_app.logger.error(f"[WEBHOOK] Commande {commande.id} sans lignes produits -> echec_stock + refund (event_id={event_id})")
+        commande.statut = 'echec_stock'
+        db.session.commit()
+        _safe_refund(commande, payment_intent_id)
+        return '', 200
 
-            if payment_intent_id:
-                try:
-                    stripe.Refund.create(payment_intent=payment_intent_id)
-                    current_app.logger.info(f"[WEBHOOK] Refund déclenché pour commande {commande.id}")
-                except Exception as re:
-                    current_app.logger.error(f"[WEBHOOK] Refund échoué commande {commande.id}: {type(re).__name__} - {re}")
+    # Décrémentation stock atomique ligne à ligne
+    from sqlalchemy import update
 
+    try:
+        for l in lignes:
+            vin_id = int(l.produit_id)
+            qty = int(l.quantite)
 
-            # Option : email justificatif si email déjà connu (souvent pas le cas chez toi)
+            stmt = (
+                update(Vin)
+                .where(Vin.id == vin_id)
+                .where(Vin.is_active == True)
+                .where(Vin.stock >= qty)
+                .values(stock=Vin.stock - qty)
+            )
+            result = db.session.execute(stmt)
+            if result.rowcount != 1:
+                raise ValueError(f"Stock insuffisant pour vin_id={vin_id}, qty={qty}")
 
-
-            if commande.email_client:
-                try:
-                    body = (
-                        f"Bonjour,\n\n"
-                        f"Votre commande #{commande.id} a été remboursée automatiquement.\n"
-                        f"Motif : le vin a été vendu simultanément et le stock n'était plus suffisant.\n\n"
-                        f"Le remboursement a été initié immédiatement. Selon votre banque, il peut apparaître sous quelques jours.\n\n"
-                        f"Les Silences du Vin"
-                    )
-                    send_plain_email(
-                        subject="Remboursement automatique – rupture de stock",
-                        body=body,
-                        sender=current_app.config['MAIL_USERNAME'],
-                        recipients=[commande.email_client],
-                        reply_to="contact@lessilencesduvin.com"
-                    )
-                except Exception as me:
-                    current_app.logger.error(f"[WEBHOOK] Erreur email remboursement commande {commande.id}: {type(me).__name__} - {me}")
+        # Si tout est OK, on valide stock + statut
+        commande.statut = 'payé'
+        db.session.commit()
+        current_app.logger.info(f"[WEBHOOK] Commande {commande.id} -> payé (stock OK) event_id={event_id}")
 
         return '', 200
 
-    return '', 200
+    except Exception as e:
+        db.session.rollback()
 
+        current_app.logger.warning(f"[WEBHOOK] Commande {commande.id} -> echec_stock ({type(e).__name__}: {e}) event_id={event_id}")
+        commande.statut = 'echec_stock'
+        db.session.commit()
+
+        _safe_refund(commande, payment_intent_id)
+
+        # Option : email justificatif si email déjà connu
+        if commande.email_client:
+            try:
+                body = (
+                    f"Bonjour,\n\n"
+                    f"Votre commande #{commande.id} a été remboursée automatiquement.\n"
+                    f"Motif : le vin a été vendu simultanément et le stock n'était plus suffisant.\n\n"
+                    f"Le remboursement a été initié immédiatement. Selon votre banque, il peut apparaître sous quelques jours.\n\n"
+                    f"Les Silences du Vin"
+                )
+                send_plain_email(
+                    subject="Remboursement automatique – rupture de stock",
+                    body=body,
+                    sender=current_app.config['MAIL_USERNAME'],
+                    recipients=[commande.email_client],
+                    reply_to="contact@lessilencesduvin.com"
+                )
+            except Exception as me:
+                current_app.logger.error(f"[WEBHOOK] Erreur email remboursement commande {commande.id}: {type(me).__name__} - {me}")
+
+        return '', 200
 # ======================================================
 # 🟣 /paiement/infos-livraison
 # ------------------------------------------------------

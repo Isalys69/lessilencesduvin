@@ -24,3 +24,14 @@ function majCompteurPanier() {
     })
     .catch(err => console.error("Erreur mise à jour compteur :", err));
 }
+
+
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest(".js-ajouter-panier");
+  if (!btn) return;
+
+  const vinId = parseInt(btn.dataset.vinId, 10);
+  if (!vinId) return;
+
+  ajouterPanier(vinId);
+});

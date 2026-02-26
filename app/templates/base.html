@@ -168,22 +168,6 @@
   <!-- ✅ Scripts perso -->
   <script src="{{ url_for('static', filename='js/cookie-banner.js') }}"></script>
 
-  <!-- ✅ Panier simplifié -->
-  <script>
-  function ajouterPanier(id) {
-    fetch('/panier/ajouter', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ vin_id: id })
-    })
-    .then(res => res.json())
-    .then(data => {
-      majCompteurPanier();
-    })
-    .catch(err => console.error('Erreur panier :', err));
-  }
-  </script>
-
   <!-- ✅ Auto-fermeture des alertes -->
   <script>
   const alerts = document.querySelectorAll('.alert');

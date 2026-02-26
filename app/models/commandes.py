@@ -41,6 +41,14 @@ class Commande(db.Model):
     stripe_refund_id = db.Column(db.String(255), nullable=True, index=True)
     date_refund = db.Column(db.DateTime, nullable=True)
     
+    # Emails transactionnels (anti double envoi)
+    email_paiement_envoye = db.Column(db.Boolean, default=False, nullable=False)
+    date_email_paiement = db.Column(db.DateTime, nullable=True)
+
+    email_completion_envoye = db.Column(db.Boolean, default=False, nullable=False)
+    date_email_completion = db.Column(db.DateTime, nullable=True)
+
+
     statut = db.Column(db.String(50), default='en_attente')
     date_commande = db.Column(db.DateTime, default=datetime.utcnow)
 

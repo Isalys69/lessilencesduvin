@@ -187,7 +187,6 @@ def stripe_webhook():
 
     # ✅ Barrière #1 : idempotence Stripe par event.id (UNIQUE)
     # Si Stripe rejoue le même event, l'insert échoue -> on retourne 200 immédiatement.
-    from sqlalchemy.exc import IntegrityError
     try:
         db.session.add(StripeEvent(
             event_id=event_id,
@@ -279,6 +278,53 @@ def stripe_webhook():
         db.session.commit()
         current_app.logger.info(f"[WEBHOOK] Commande {commande.id} -> payé (stock OK) event_id={event_id}")
 
+        # ✅ Email "Paiement confirmé" (idempotent via flag)
+        # Stripe fournit l'email dans customer_details.email (le plus fiable), sinon customer_email.
+        stripe_email = None
+        try:
+            customer_details = session_stripe.get("customer_details") or {}
+            stripe_email = customer_details.get("email") or session_stripe.get("customer_email")
+        except Exception:
+            stripe_email = None
+
+        if stripe_email and not commande.email_paiement_envoye:
+            try:
+                body = (
+                    f"Bonjour,\n\n"
+                    f"Votre paiement pour la commande #{commande.id} a bien été confirmé.\n"
+                    f"Montant : {commande.total_ttc} €\n\n"
+                    f"✅ Dernière étape : merci de renseigner votre adresse de livraison ici :\n"
+                    f"https://www.lessilencesduvin.fr/paiement/infos-livraison\n\n"
+                    f"Sans ces informations, nous ne pourrons pas expédier votre commande.\n\n"
+                    f"Les Silences du Vin"
+                )
+                send_plain_email(
+                    subject=f"Paiement confirmé – Commande #{commande.id}",
+                    body=body,
+                    sender=current_app.config['MAIL_USERNAME'],
+                    recipients=[stripe_email],
+                    reply_to="contact@lessilencesduvin.com"
+                )
+                commande.email_paiement_envoye = True
+                commande.date_email_paiement = datetime.utcnow()
+
+                # On en profite pour pré-remplir email_client si vide (utile pour admin)
+                if not commande.email_client:
+                    commande.email_client = stripe_email
+
+                db.session.commit()
+                current_app.logger.info(f"[WEBHOOK] Email paiement envoyé commande {commande.id} -> {stripe_email}")
+            except Exception as e:
+                current_app.logger.error(f"[WEBHOOK] Erreur envoi email paiement commande {commande.id}: {type(e).__name__} - {e}")
+        else:
+            if not stripe_email:
+                current_app.logger.warning(f"[WEBHOOK] Email Stripe absent, email paiement non envoyé commande {commande.id}")
+            elif commande.email_paiement_envoye:
+                current_app.logger.info(f"[WEBHOOK] Email paiement déjà envoyé commande {commande.id}")
+
+
+
+
         return '', 200
 
     except Exception as e:
@@ -343,27 +389,34 @@ def infos_livraison():
         commande.ville_facturation = form.ville_facturation.data
         commande.statut = 'complétée'
 
-        # condition transactionnelle
-        if commande.statut == "complétée":
-            body = (
-                f"Bonjour {commande.prenom_client},\n\n"
-                f"Votre commande #{commande.id} a bien été enregistrée.\n"
-                f"Montant : {commande.total_ttc} €\n\n"
-                f"Nous vous contacterons si nécessaire.\n\n"
-                f"Les Silences du Vin"
-            )
-
+        # ✅ Email "Informations reçues" (idempotent via flag)
+        if commande.email_client and not commande.email_completion_envoye:
             try:
+                body = (
+                    f"Bonjour {commande.prenom_client},\n\n"
+                    f"Nous avons bien reçu vos informations de livraison pour la commande #{commande.id}.\n"
+                    f"Montant : {commande.total_ttc} €\n\n"
+                    f"Adresse de livraison :\n"
+                    f"{commande.adresse_livraison}\n"
+                    f"{commande.code_postal_livraison} {commande.ville_livraison}\n\n"
+                    f"Les Silences du Vin"
+                )
+
                 send_plain_email(
-                    subject="Confirmation de votre commande",
+                    subject=f"Informations reçues – Commande #{commande.id}",
                     body=body,
                     sender=current_app.config['MAIL_USERNAME'],
                     recipients=[commande.email_client],
                     reply_to="contact@lessilencesduvin.com"
                 )
-            except Exception as e:
-                current_app.logger.error(f"Erreur envoi email commande {commande.id} : {e}")
 
+                commande.email_completion_envoye = True
+                commande.date_email_completion = datetime.utcnow()
+
+            except Exception as e:
+                current_app.logger.error(
+                    f"Erreur envoi email completion commande {commande.id} : {type(e).__name__} - {e}"
+                )
         db.session.commit()
         flash("Merci ! Vos informations ont bien été enregistrées.", "success")
         flask_session.pop('panier', None)

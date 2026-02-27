@@ -111,3 +111,4 @@ app/static/img/vins/old*
 # - app/data/seed.sql (si créé)
 # - tout le code applicatif
 ##############################################
+.env_version

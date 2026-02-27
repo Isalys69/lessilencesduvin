@@ -32,7 +32,7 @@ document.addEventListener("click", (e) => {
 
   // Si bouton marqué comme désactivé
   const isDisabled =
-    btn.classList.contains("disabled") ||
+    btn.classList.contains("disabled-btn") ||
     btn.getAttribute("aria-disabled") === "true";
 
   if (isDisabled) {

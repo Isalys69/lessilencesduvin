@@ -39,6 +39,7 @@ def create_app():
     """Crée et configure l'application Flask."""
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_object(Config)
+    app.config["APP_VERSION"] = os.getenv("APP_VERSION", "dev")
     app.permanent_session_lifetime = app.config['PERMANENT_SESSION_LIFETIME']
 
     

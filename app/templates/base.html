@@ -178,7 +178,6 @@
     }, 3500); // 3.5 secondes
   });
 </script>
-<script src="{{ url_for('static', filename='js/panier.js') }}"></script>
-
+<script src="{{ url_for('static', filename='js/panier.js') }}?v={{ config.get('APP_VERSION', 'dev') }}"></script>
 </body>
 </html>

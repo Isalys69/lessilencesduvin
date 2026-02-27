@@ -7,7 +7,7 @@ function ajouterPanier(id) {
   .then(async (res) => {
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
-      window.location.reload();
+      alert(data.message || "Impossible d’ajouter ce vin au panier.");
       return;
     }
     majCompteurPanier();

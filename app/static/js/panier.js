@@ -30,6 +30,18 @@ document.addEventListener("click", (e) => {
   const btn = e.target.closest(".js-ajouter-panier");
   if (!btn) return;
 
+  // Si bouton marqué comme désactivé
+  const isDisabled =
+    btn.classList.contains("disabled") ||
+    btn.getAttribute("aria-disabled") === "true";
+
+  if (isDisabled) {
+    const msg =
+      btn.dataset.disabledReason || "Action indisponible.";
+    alert(msg);
+    return;
+  }
+
   const vinId = parseInt(btn.dataset.vinId, 10);
   if (!vinId) return;
 

@@ -369,6 +369,8 @@ def stripe_webhook():
 # ======================================================
 @paiement_bp.route('/infos-livraison', methods=['GET', 'POST'])
 def infos_livraison():
+    from sqlalchemy import update
+    from datetime import datetime
 
     commande_id = flask_session.get('commande_id')
     commande = Commande.query.get(commande_id) if commande_id else None
@@ -377,53 +379,94 @@ def infos_livraison():
         flash("Aucune commande à compléter.", "warning")
         return redirect(url_for('catalogue.index'))
 
+    # ✅ Idempotence UX
+    if commande.statut == "complétée":
+        return redirect(url_for("catalogue.index"))
+
+    # ✅ Garde stricte paiement (barrière métier)
+    if commande.statut != "payé":
+        flash("Cette commande n'est pas confirmée comme payée.", "warning")
+        return redirect(url_for("catalogue.index"))
+
     form = GuestCheckoutForm()
 
     if form.validate_on_submit():
-        commande.email_client = form.email.data
-        commande.prenom_client = form.prenom.data
-        commande.nom_client = form.nom.data
-        commande.adresse_livraison = form.adresse_livraison.data
-        commande.code_postal_livraison = form.code_postal_livraison.data
-        commande.ville_livraison = form.ville_livraison.data
-        commande.telephone_livraison = form.telephone.data
-        commande.adresse_facturation = form.adresse_facturation.data
-        commande.code_postal_facturation = form.code_postal_facturation.data
-        commande.ville_facturation = form.ville_facturation.data
-        commande.statut = 'complétée'
+        now = datetime.utcnow()
 
-        # ✅ Email "Informations reçues" (idempotent via flag)
-        if commande.email_client and not commande.email_completion_envoye:
-            try:
-                body = (
-                    f"Bonjour {commande.prenom_client},\n\n"
-                    f"Nous avons bien reçu vos informations de livraison pour la commande #{commande.id}.\n"
-                    f"Montant : {commande.total_ttc} €\n\n"
-                    f"Adresse de livraison :\n"
-                    f"{commande.adresse_livraison}\n"
-                    f"{commande.code_postal_livraison} {commande.ville_livraison}\n\n"
-                    f"Les Silences du Vin"
-                )
+        # ✅ Transition atomique payé -> complétée + verrou email (anti double POST / anti double email)
+        stmt = (
+            update(Commande)
+            .where(Commande.id == commande.id)
+            .where(Commande.statut == "payé")
+            .where(Commande.email_completion_envoye == False)
+            .values(
+                email_client=form.email.data,
+                prenom_client=form.prenom.data,
+                nom_client=form.nom.data,
+                adresse_livraison=form.adresse_livraison.data,
+                code_postal_livraison=form.code_postal_livraison.data,
+                ville_livraison=form.ville_livraison.data,
+                telephone_livraison=form.telephone.data,
+                adresse_facturation=form.adresse_facturation.data,
+                code_postal_facturation=form.code_postal_facturation.data,
+                ville_facturation=form.ville_facturation.data,
+                statut="complétée",
+                email_completion_envoye=True,
+                date_email_completion=now,
+            )
+        )
 
-                send_plain_email(
-                    subject=f"Informations reçues – Commande #{commande.id}",
-                    body=body,
-                    sender=current_app.config['MAIL_USERNAME'],
-                    recipients=[commande.email_client],
-                    reply_to="contact@lessilencesduvin.com"
-                )
+        try:
+            result = db.session.execute(stmt)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.error(
+                f"[INFOS] Erreur DB complétion commande {commande.id}: {type(e).__name__} - {e}"
+            )
+            flash("Une erreur est survenue. Veuillez réessayer.", "warning")
+            return redirect(url_for("paiement.infos_livraison"))
 
-                commande.email_completion_envoye = True
-                commande.date_email_completion = datetime.utcnow()
+        if result.rowcount != 1:
+            # Déjà complétée OU pas payée OU déjà email envoyé -> aucun envoi
+            current_app.logger.info(
+                f"[INFOS] Complétion ignorée (rowcount=0) commande_id={commande.id} "
+                f"statut_actuel={commande.statut} email_completion_envoye={commande.email_completion_envoye}"
+            )
+            flash("Cette commande a déjà été traitée ou n'est pas éligible.", "warning")
+            return redirect(url_for("catalogue.index"))
 
-            except Exception as e:
-                current_app.logger.error(
-                    f"Erreur envoi email completion commande {commande.id} : {type(e).__name__} - {e}"
-                )
-        db.session.commit()
+        # ✅ Email "Informations reçues" (exactly-once grâce au verrou DB ci-dessus)
+        try:
+            body = (
+                f"Bonjour {form.prenom.data},\n\n"
+                f"Nous avons bien reçu vos informations de livraison pour la commande #{commande.id}.\n"
+                f"Montant : {commande.total_ttc} €\n\n"
+                f"Adresse de livraison :\n"
+                f"{form.adresse_livraison.data}\n"
+                f"{form.code_postal_livraison.data} {form.ville_livraison.data}\n\n"
+                f"Les Silences du Vin"
+            )
+            send_plain_email(
+                subject=f"Informations reçues – Commande #{commande.id}",
+                body=body,
+                sender=current_app.config['MAIL_USERNAME'],
+                recipients=[form.email.data],
+                reply_to="contact@lessilencesduvin.com"
+            )
+            current_app.logger.info(f"[INFOS] Email complétion envoyé commande {commande.id} -> {form.email.data}")
+        except Exception as e:
+            # V1: on ne "déverrouille" pas le flag, sinon risque de doubles envois.
+            current_app.logger.error(
+                f"[INFOS] Erreur envoi email complétion commande {commande.id}: {type(e).__name__} - {e}"
+            )
+
         flash("Merci ! Vos informations ont bien été enregistrées.", "success")
+
+        # Nettoyage session
         flask_session.pop('panier', None)
-    
+        flask_session.pop('commande_id', None)
+
         return redirect(url_for('catalogue.index'))
 
     return render_template('paiement/infos_livraison.html', form=form, commande=commande)

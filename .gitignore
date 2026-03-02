@@ -112,3 +112,12 @@ app/static/img/vins/old*
 # - tout le code applicatif
 ##############################################
 .env_version
+
+# ─────────────────────────────
+# Local development artifacts
+# (Bloc 5 hygiene - safe additions)
+# ─────────────────────────────
+.open
+app/db/
+*.sqlite
+*.sqlite3

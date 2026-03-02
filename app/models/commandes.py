@@ -52,6 +52,11 @@ class Commande(db.Model):
     statut = db.Column(db.String(50), default='en_attente')
     date_commande = db.Column(db.DateTime, default=datetime.utcnow)
 
+
+    # Hygiène des commandes en_attente -> abandonnee
+    date_abandon = db.Column(db.DateTime, nullable=True)
+    abandon_motif = db.Column(db.String(50), nullable=True)  # ex: "ttl_expired"
+    
     # Relation vers les produits
     produits = db.relationship('CommandeProduit', backref='commande', lazy=True)
 

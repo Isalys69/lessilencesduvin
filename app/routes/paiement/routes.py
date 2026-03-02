@@ -301,9 +301,6 @@ def stripe_webhook():
                     f"Sans ces informations, nous ne pourrons pas expédier votre commande.\n\n"
                     f"Les Silences du Vin"
                 )
-                current_app.logger.info(
-                    f"[MAIL] subject={subject} to={msg.get('To')} bcc={msg.get('Bcc')} from={sender}"
-                )
                 
                 send_plain_email(
                     subject=f"Paiement confirmé – Commande #{commande.id}",
@@ -451,11 +448,6 @@ def infos_livraison():
                 f"{form.code_postal_livraison.data} {form.ville_livraison.data}\n\n"
                 f"Les Silences du Vin"
             )
-
-            current_app.logger.info(
-                f"[MAIL] subject={subject} to={msg.get('To')} bcc={msg.get('Bcc')} from={sender}"
-            )
-            
             send_plain_email(
                 subject=f"Informations reçues – Commande #{commande.id}",
                 body=body,

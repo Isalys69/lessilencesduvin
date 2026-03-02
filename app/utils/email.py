@@ -13,6 +13,10 @@ def send_plain_email(subject, body, sender, recipients, reply_to=None):
     msg["Bcc"] = "contact@lessilencesduvin.fr"
 
 
+    current_app.logger.info(
+        f"[MAIL] subject={msg['Subject']} to={msg.get('To')} bcc={msg.get('Bcc')} from={msg.get('From')}"
+    )
+
     context = ssl.create_default_context()
     with smtplib.SMTP_SSL(
         current_app.config['MAIL_SERVER'],
@@ -23,4 +27,11 @@ def send_plain_email(subject, body, sender, recipients, reply_to=None):
             current_app.config['MAIL_USERNAME'],
             current_app.config['MAIL_PASSWORD']
         )
-        server.send_message(msg)
+
+
+        try:
+            server.send_message(msg)
+        except Exception as e:
+            current_app.logger.error(f"[MAIL] send failed: {type(e).__name__} - {e}")
+            raise
+        

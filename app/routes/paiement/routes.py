@@ -31,7 +31,6 @@ paiement_bp = Blueprint('paiement', __name__, url_prefix='/paiement')
 
 # Configuration Stripe
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
-print("✅ Stripe chargé - clé publique :", os.getenv("STRIPE_PUBLIC_KEY")[:15], "...")
 
 # ======================================================
 # 🟢 /paiement/create-checkout-session

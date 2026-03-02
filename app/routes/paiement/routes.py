@@ -507,9 +507,15 @@ def success():
     # Stocker l'ID dans la session Flask
     flask_session['commande_id'] = commande.id
 
+    # ✅ Info délivrabilité : message à l'écran (utile même si le mail tombe en indésirables)
+    flash(
+        "Un email de confirmation vient de vous être envoyé. "
+        "Si vous ne le voyez pas, pensez à vérifier votre dossier courrier indésirable / spam.",
+        "info"
+    )
+
     # Rediriger vers la page de saisie des informations client
     return redirect(url_for('paiement.infos_livraison'))
-
 
 # ======================================================
 # 🔴 5. Route /cancel

@@ -94,7 +94,9 @@ def create_checkout_session():
 
     # Stocker temporairement dans la session Flask
     flask_session['commande_id'] = commande.id
-    print(f"🧾 Commande {commande.id} créée (en attente, total TTC {total_ttc} €)")
+    current_app.logger.info(
+        f"[CHECKOUT] Commande {commande.id} créée (statut=en_attente, total_ttc={total_ttc} EUR)"
+    )
 
     try:
         # 🟢 Étape 2 : session Stripe (produits + livraison si nécessaire)
@@ -136,7 +138,9 @@ def create_checkout_session():
         # 🔗 Étape 3 : lier commande ↔ Stripe session
         commande.stripe_session_id = stripe_session.id
         db.session.commit()
-        print(f"🔗 Commande {commande.id} liée à Stripe {stripe_session.id}")
+        current_app.logger.info(
+            f"[CHECKOUT] Commande {commande.id} liée à stripe_session_id={stripe_session.id}"
+        )
 
         # 🚀 Retour JSON pour le front (Stripe redirect)
         return jsonify({"id": stripe_session.id})
@@ -441,7 +445,9 @@ def success():
     # Récupération de la commande liée à cette session Stripe
     commande = Commande.query.filter_by(stripe_session_id=session_id).first()
     if not commande:
-        print("⚠️ Aucune commande trouvée pour cette session Stripe.")
+        current_app.logger.warning(
+            f"[SUCCESS] Aucune commande trouvée pour stripe_session_id={session_id}"
+        )
         return render_template('paiement/cancel.html')
 
     # ✅ /success ne décide pas du statut: le webhook est l'autorité

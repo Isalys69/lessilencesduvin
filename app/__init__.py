@@ -8,16 +8,10 @@ from flask import Flask, g, request, redirect
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from dotenv import load_dotenv
-from config.config import Config
+from config.config import get_config
 from sqlalchemy import text
-
-# ───────────────────────────────────────────
-# 📦 Extensions globales (V3)
-# ───────────────────────────────────────────
-db = SQLAlchemy()
-login_manager = LoginManager()
-login_manager.login_message = "Veuillez vous connecter pour accéder à cette page 💾"
-login_manager.login_message_category = "warning"
+from flask_wtf.csrf import CSRFProtect
+from app.extensions import db, login_manager, csrf
 
 
 # ───────────────────────────────────────────
@@ -38,9 +32,22 @@ DB_PATH = os.path.join(DATA_DIR, "vins.db")
 def create_app():
     """Crée et configure l'application Flask."""
     app = Flask(__name__, instance_relative_config=True)
-    app.config.from_object(Config)
+    app.config.from_object(get_config())
     app.config["APP_VERSION"] = os.getenv("APP_VERSION", "dev")
     app.permanent_session_lifetime = app.config['PERMANENT_SESSION_LIFETIME']
+
+    # CSRF global (après création app + config)
+    csrf.init_app(app)
+
+    # 🔌 DB — SQLAlchemy (source de vérité = config.Config)
+    db.init_app(app)
+
+    # Login manager (config + init)
+    login_manager.login_message = "Veuillez vous connecter pour accéder à cette page 💾"
+    login_manager.login_message_category = "warning"
+    login_manager.login_view = "auth.login"
+    login_manager.session_protection = "strong"
+    login_manager.init_app(app)
 
     
     # 📜 Logger (fichier + console)
@@ -61,8 +68,6 @@ def create_app():
     # Évite la propagation vers le root logger (sinon double log possible)
     logger.propagate = False
 
-    # 🔌 DB — SQLAlchemy (source de vérité = config.Config)
-    db.init_app(app)
 
     # Petit check de connectivité DB utile au démarrage web,
     # mais trop bruyant côté CLI (Flask peut construire l'app plusieurs fois).

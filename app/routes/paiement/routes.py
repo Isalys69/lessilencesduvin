@@ -17,6 +17,8 @@ from decimal import Decimal
 from app.utils.panier_tools import money2, compute_shipping
 
 from sqlalchemy.exc import IntegrityError
+from app import csrf  # import du csrf depuis app/__init__.py
+
 
 # ======================================================
 # 🧭 Blueprint Paiement
@@ -159,6 +161,7 @@ def create_checkout_session():
 # ➜ Met à jour la commande en "payé"
 # ======================================================
 @paiement_bp.route('/webhook/stripe', methods=['POST'])
+@csrf.exempt
 def stripe_webhook():
     payload = request.data
     sig_header = request.headers.get('Stripe-Signature')

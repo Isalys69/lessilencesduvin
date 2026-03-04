@@ -6,6 +6,7 @@ from app.models.panier_sauvegarde import PanierSauvegarde
 from app.models.vin import Vin
 from app import db
 from decimal import Decimal
+from app.extensions import csrf
 from app.utils.panier_tools import (
     get_session_panier,
     set_session_panier,
@@ -66,6 +67,7 @@ def index():
 
 
 @panier_bp.route('/ajouter', methods=['POST'])
+@csrf.exempt
 def ajouter():
     panier = get_session_panier()
     data = request.get_json(silent=True) or {}
@@ -124,6 +126,7 @@ def ajouter():
 
 
 @panier_bp.route('/update_cart', methods=['POST'])
+@csrf.exempt
 def update_cart():
     panier=get_session_panier()
     vin_id = request.form.get('vin_id')

@@ -127,6 +127,7 @@ def ajouter():
 
 @panier_bp.route('/update_cart', methods=['POST'])
 @csrf.exempt
+@login_required
 def update_cart():
     panier=get_session_panier()
     vin_id = request.form.get('vin_id')
@@ -170,6 +171,7 @@ def compteur():
 from flask import flash, redirect, url_for, jsonify, request
 
 @panier_bp.route('/save_cart', methods=['POST'])
+@csrf.exempt
 @login_required
 def save_cart():
     if not current_user.is_authenticated:

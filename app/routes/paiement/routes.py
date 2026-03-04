@@ -44,6 +44,7 @@ stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 # ======================================================
 
 @paiement_bp.route('/create-checkout-session', methods=['POST', 'GET'])
+@csrf.exempt
 def create_checkout_session():
     panier = get_session_panier()
     if not panier:

@@ -10,6 +10,7 @@ auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
+@csrf.exempt
 def register():
     form = RegistrationForm()
     if form.validate_on_submit():
@@ -52,6 +53,7 @@ def login():
     return render_template('auth/login.html', form=form)
 
 @auth_bp.route('/logout')
+@csrf.exempt
 @login_required
 def logout():
     logout_user()

@@ -3,14 +3,13 @@ from flask import render_template, redirect, url_for, flash, request
 from flask_login import login_user, logout_user, login_required
 from app.models.user import User
 from app.forms.auth_form import RegistrationForm, LoginForm
-from app.extensions import db, csrf
+from app.extensions import db
 
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
-@csrf.exempt
 def register():
     form = RegistrationForm()
     if form.validate_on_submit():
@@ -28,7 +27,6 @@ def register():
     return render_template('auth/register.html', form=form)
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
-@csrf.exempt
 def login():
     form = LoginForm()
     if form.validate_on_submit():
@@ -53,7 +51,6 @@ def login():
     return render_template('auth/login.html', form=form)
 
 @auth_bp.route('/logout')
-@csrf.exempt
 @login_required
 def logout():
     logout_user()

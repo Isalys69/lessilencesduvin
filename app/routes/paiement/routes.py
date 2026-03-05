@@ -43,7 +43,7 @@ stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 # ➜ Redirige ensuite vers Stripe Checkout
 # ======================================================
 
-@paiement_bp.route('/create-checkout-session', methods=['POST', 'GET'])
+@paiement_bp.route('/create-checkout-session', methods=['POST'])
 @csrf.exempt
 def create_checkout_session():
     panier = get_session_panier()
@@ -69,9 +69,9 @@ def create_checkout_session():
     shipping = money2(compute_shipping(subtotal))
     total_ttc = money2(subtotal + shipping)
 
-    subtotal_cents = int(subtotal * 100)
-    shipping_cents = int(shipping * 100)
-
+    subtotal_cents = int((subtotal * 100).to_integral_value())
+    shipping_cents = int((shipping * 100).to_integral_value())
+    
     # 🧾 Étape 1 : création commande "en attente" avec le TOTAL TTC (produits + livraison)
     commande = Commande(
         total_ttc=float(total_ttc),
@@ -79,6 +79,8 @@ def create_checkout_session():
         date_commande=datetime.utcnow()
     )
 
+    if current_user.is_authenticated:
+        commande.user_id = current_user.user_id
 
     db.session.add(commande)
     db.session.commit()
@@ -124,31 +126,52 @@ def create_checkout_session():
                 "quantity": 1,
             })
 
+        # ✅ metadata Stripe (utile pour debug; Option A reste la source de vérité via commande.user_id)
+        metadata = {
+            "commande_id": str(commande.id),
+            "subtotal_eur": str(subtotal),
+            "shipping_eur": str(shipping),
+            "total_ttc_eur": str(total_ttc),
+        }
+        if current_user.is_authenticated:
+            metadata["user_id"] = str(current_user.user_id)
+
         stripe_session = stripe.checkout.Session.create(
             payment_method_types=["card"],
             line_items=line_items,
             mode="payment",
             success_url=f"{base_url}/paiement/success?session_id={{CHECKOUT_SESSION_ID}}",
             cancel_url=f"{base_url}/paiement/cancel",
-            metadata={
-                "commande_id": str(commande.id),
-                "subtotal_eur": str(subtotal),
-                "shipping_eur": str(shipping),
-                "total_ttc_eur": str(total_ttc),
-            }
+            metadata=metadata,
         )
 
-        # 🔗 Étape 3 : lier commande ↔ Stripe session
-        commande.stripe_session_id = stripe_session.id
-        db.session.commit()
+        # 🔗 Lier commande ↔ Stripe session (une seule fois)
+        try:
+            commande.stripe_session_id = stripe_session.id
+            db.session.commit()
+        except Exception as db_e:
+            db.session.rollback()
+            current_app.logger.error(f"DB error after Stripe session created: {db_e}")
+            # Option V1: marquer abandonnée pour éviter une commande "fantôme"
+            commande.statut = "abandonnee"
+            commande.date_abandon = datetime.utcnow().isoformat()
+            commande.abandon_motif = f"db_error_after_stripe_session:{type(db_e).__name__}"
+            db.session.add(commande)
+            db.session.commit()
+            raise
+
         current_app.logger.info(
             f"[CHECKOUT] Commande {commande.id} liée à stripe_session_id={stripe_session.id}"
         )
 
-        # 🚀 Retour JSON pour le front (Stripe redirect)
         return jsonify({"id": stripe_session.id})
 
+
     except Exception as e:
+        commande.statut = "abandonnee"
+        commande.date_abandon = datetime.utcnow().isoformat()
+        commande.abandon_motif = f"stripe_error:{type(e).__name__}"
+        db.session.commit()
         current_app.logger.error(f"Erreur Stripe : {type(e).__name__} - {e}")
         flash("Le service de paiement est momentanément indisponible. Veuillez réessayer plus tard.", "warning")
         return redirect(url_for('catalogue.index'))

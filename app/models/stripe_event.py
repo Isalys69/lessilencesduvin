@@ -1,5 +1,5 @@
 from datetime import datetime
-from app import db
+from app.extensions import db
 
 class StripeEvent(db.Model):
     __tablename__ = "stripe_events"

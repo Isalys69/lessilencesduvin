@@ -4,7 +4,7 @@ from flask import Blueprint, render_template, request, jsonify,redirect,url_for,
 from flask_login import current_user, login_required
 from app.models.panier_sauvegarde import PanierSauvegarde
 from app.models.vin import Vin
-from app import db
+from app.extensions import db
 from decimal import Decimal
 from app.extensions import csrf
 from app.utils.panier_tools import (
@@ -127,7 +127,6 @@ def ajouter():
 
 @panier_bp.route('/update_cart', methods=['POST'])
 @csrf.exempt
-@login_required
 def update_cart():
     panier=get_session_panier()
     vin_id = request.form.get('vin_id')

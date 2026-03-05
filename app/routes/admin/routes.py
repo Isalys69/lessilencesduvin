@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
 
-from app import db
+from app.extensions import db
 from app.models.vin import Vin
 from app.models.domaine import Domaine
 from app.models.commandes import Commande

@@ -4,7 +4,7 @@ from flask import Blueprint, render_template, request, jsonify, session as flask
 from flask import current_app
 from flask_login import current_user
 
-from app import db
+from app.extensions import db
 from app.models.commandes import Commande, CommandeProduit
 from app.models.stripe_event import StripeEvent
 
@@ -17,7 +17,7 @@ from decimal import Decimal
 from app.utils.panier_tools import money2, compute_shipping
 
 from sqlalchemy.exc import IntegrityError
-from app import csrf  # import du csrf depuis app/__init__.py
+from app.extensions import csrf
 
 
 # ======================================================

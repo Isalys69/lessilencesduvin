@@ -12,7 +12,7 @@
 #    flask shell
 #
 # 3. Dans le shell Python :
-from app import db, create_app
+from app.extensions import db, create_app
 app = create_app()
 app.app_context().push()
 db.create_all()

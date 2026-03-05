@@ -17,7 +17,7 @@ Elles doivent être **créées manuellement** par l’administrateur à l’aide
 
 ```bash
 flask shell
->>> from app import db, create_app
+>>> from app.extensions import db, create_app
 >>> app = create_app()
 >>> app.app_context().push()
 >>> db.create_all()

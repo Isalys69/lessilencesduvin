@@ -373,6 +373,7 @@ def stripe_webhook():
 # ➜ Envoie un courriel de confirmation au client
 # ======================================================
 @paiement_bp.route('/infos-livraison', methods=['GET', 'POST'])
+@csrf.exempt
 def infos_livraison():
     from sqlalchemy import update
     from datetime import datetime

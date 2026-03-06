@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <h1>Mon historique</h1>
+
+    {% if commandes %}
+        {% for commande in commandes %}
+            <p>Commande {{ commande.id }} — {{ commande.statut }}</p>
+        {% endfor %}
+    {% else %}
+        <p>Aucune commande efffectuée.</p>
+    {% endif %}
+
+{% endblock %}

@@ -337,6 +337,7 @@ def create_app():
     from app.routes.auth import auth_bp
     from app.routes.paiement import paiement_bp
     from app.routes.admin.routes import admin_bp
+    from app.routes.compte.routes import compte_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(catalogue_bp)
@@ -350,5 +351,6 @@ def create_app():
     app.register_blueprint(auth_bp)
     app.register_blueprint(paiement_bp)
     app.register_blueprint(admin_bp)
+    app.register_blueprint(compte_bp)
 
     return app

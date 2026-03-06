@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <h1>Mes commandes</h1>
+
+    <h2>Commandes en cours</h2>
+
+    {% if commandes %}
+        {% for commande in commandes %}
+            <p>Commande {{ commande.id }} — {{ commande.statut }}</p>
+        {% endfor %}
+    {% else %}
+        <p>Aucune commande trouvée.</p>
+    {% endif %}
+
+    <h2>Commandes sauvegardées</h2>
+
+    {% if sauvegardes %}
+        {% for sauvegarde in sauvegardes %}
+            <p>Sauvegarde {{ sauvegarde.date_creation }}</p>
+            <ul>
+                {% for item in sauvegarde.panier %}
+                    <li>{{ item.nom }} — {{ item.qty }}</li>
+                {% endfor %}
+            </ul>
+        {% endfor %}    
+    {% else %}
+        <p>Aucune commande enregistrée.</p>
+    {% endif %}
+
+
+
+
+{% endblock %}

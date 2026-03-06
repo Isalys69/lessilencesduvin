@@ -36,7 +36,7 @@ def commandes():
 
 
 
-@compte_bp.route("/compte/historique")
+@compte_bp.route("/historique")
 def historique():
 
     commandes = Commande.query.filter(

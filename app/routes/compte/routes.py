@@ -1,14 +1,16 @@
 from flask import Blueprint
-from flask import render_template
+from flask import render_template,request
+from app.extensions import db
 from app.models.commandes import Commande
 from app.models.panier_sauvegarde import PanierSauvegarde
-from flask_login import current_user
+from flask_login import current_user,login_required
 import json
 
 
 compte_bp = Blueprint('compte', __name__, url_prefix='/compte')
 
 @compte_bp.route('/commandes', methods=['GET', 'POST'])
+@login_required
 def commandes():
 
     commandes = Commande.query.filter(
@@ -33,10 +35,8 @@ def commandes():
     	sauvegardes=sauvegardes
     )
 
-
-
-
 @compte_bp.route("/historique")
+@login_required
 def historique():
 
     commandes = Commande.query.filter(
@@ -51,4 +51,17 @@ def historique():
         "account/historique.html",
         commandes=commandes
     )
-    
+
+@compte_bp.route("/profil", methods=["GET", "POST"])
+@login_required
+def profil():
+    if request.method == "POST":
+        current_user.nom = request.form.get("nom", "").strip()
+        current_user.prenom = request.form.get("prenom", "").strip()
+        current_user.email = request.form.get("email", "").strip()
+
+        db.session.commit()
+        flash("Vos informations ont bien été mises à jour.", "success")
+        return redirect(url_for("compte.profil"))
+
+    return render_template("account/profil.html", user=current_user)

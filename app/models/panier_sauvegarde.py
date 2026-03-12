@@ -8,6 +8,7 @@ class PanierSauvegarde(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
     contenu_json = db.Column(db.Text, nullable=False)
     date_creation = db.Column(db.DateTime, default=datetime.utcnow)
+    date_commande = db.Column(db.DateTime, nullable=True)
 
     def __repr__(self):
         return f'<PanierSauvegarde {self.id} - user {self.user_id}>'

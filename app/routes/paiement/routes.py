@@ -419,6 +419,16 @@ def infos_livraison():
 
     form = GuestCheckoutForm()
 
+    # ✅ Pré-remplissage depuis le profil utilisateur (GET uniquement)
+    if request.method == 'GET' and current_user.is_authenticated:
+        form.email.data                 = current_user.email
+        form.prenom.data                = current_user.prenom or ''
+        form.nom.data                   = current_user.nom or ''
+        form.adresse_livraison.data     = current_user.adresse or ''
+        form.code_postal_livraison.data = current_user.code_postal or ''
+        form.ville_livraison.data       = current_user.ville or ''
+        form.telephone.data             = current_user.telephone or ''
+
     if form.validate_on_submit():
         now = datetime.utcnow()
 
@@ -455,6 +465,20 @@ def infos_livraison():
             )
             flash("Une erreur est survenue. Veuillez réessayer.", "warning")
             return redirect(url_for("paiement.infos_livraison"))
+
+        # ✅ Mise à jour silencieuse du profil (pour pré-remplir la prochaine commande)
+        if result.rowcount == 1 and current_user.is_authenticated:
+            try:
+                current_user.prenom      = form.prenom.data
+                current_user.nom         = form.nom.data
+                current_user.adresse     = form.adresse_livraison.data
+                current_user.code_postal = form.code_postal_livraison.data
+                current_user.ville       = form.ville_livraison.data
+                current_user.telephone   = form.telephone.data
+                db.session.commit()
+            except Exception as e:
+                db.session.rollback()
+                current_app.logger.warning(f"[INFOS] Mise à jour profil échouée user {current_user.user_id}: {e}")
 
         if result.rowcount != 1:
             # Déjà complétée OU pas payée OU déjà email envoyé -> aucun envoi

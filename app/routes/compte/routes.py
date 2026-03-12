@@ -1,5 +1,4 @@
-from flask import Blueprint
-from flask import render_template,request
+from flask import Blueprint, render_template, request, jsonify, session as flask_session, redirect, url_for, flash
 from app.extensions import db
 from app.models.commandes import Commande
 from app.models.panier_sauvegarde import PanierSauvegarde
@@ -65,3 +64,15 @@ def profil():
         return redirect(url_for("compte.profil"))
 
     return render_template("account/profil.html", user=current_user)
+
+@compte_bp.route('/reprendre-commande/<int:commande_id>')
+@login_required
+def reprendre_commande(commande_id):
+    commande = Commande.query.filter_by(
+        id=commande_id,
+        user_id=current_user.user_id,
+        statut='payé'
+    ).first_or_404()
+
+    flask_session['commande_id'] = commande.id
+    return redirect(url_for('paiement.infos_livraison'))

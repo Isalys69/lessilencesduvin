@@ -121,3 +121,4 @@ app/static/img/vins/old*
 app/db/
 *.sqlite
 *.sqlite3
+app/templates/account/.claude

@@ -6,11 +6,19 @@ from app.extensions import db, login_manager
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
-    user_id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(120), unique=True, nullable=False)
+    user_id     = db.Column(db.Integer, primary_key=True)
+    email       = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
-    is_admin = db.Column(db.Boolean, default=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    is_admin    = db.Column(db.Boolean, default=False)
+    created_at  = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # Informations de livraison (pré-remplissage formulaire)
+    prenom      = db.Column(db.String(80),  nullable=True)
+    nom         = db.Column(db.String(80),  nullable=True)
+    adresse     = db.Column(db.String(255), nullable=True)
+    code_postal = db.Column(db.String(10),  nullable=True)
+    ville       = db.Column(db.String(80),  nullable=True)
+    telephone   = db.Column(db.String(30),  nullable=True)
 
     # Méthode pour définir le hash
     def set_password(self, password):

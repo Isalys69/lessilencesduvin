@@ -2,34 +2,125 @@
 
 {% block content %}
 
-    <h1>Mes commandes</h1>
+<div class="container my-5">
 
-    <h2>Commandes en cours</h2>
+  <div class="mb-5">
+    <h1 class="mb-1">Mes commandes</h1>
+    <p class="text-muted">Retrouvez ici vos commandes en cours et vos paniers enregistrés.</p>
+  </div>
+
+  <!-- ===== COMMANDES EN COURS ===== -->
+  <section class="mb-5">
+    <h2 class="h5 fw-semibold text-uppercase letter-spacing mb-3">
+      <i class="bi bi-bag me-2"></i>Commandes en cours
+    </h2>
 
     {% if commandes %}
-        {% for commande in commandes %}
-            <p>Commande {{ commande.id }} — {{ commande.statut }}</p>
-        {% endfor %}
-    {% else %}
-        <p>Aucune commande trouvée.</p>
-    {% endif %}
+      <div class="table-responsive">
+        <table class="table table-bordered align-middle text-center">
+          <thead class="table-light">
+            <tr>
+              <th>N° commande</th>
+              <th>Date</th>
+              <th>Statut</th>
+              <th>Total TTC</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in commandes %}
+            <tr>
+              <td class="fw-semibold">#{{ c.id }}</td>
+              <td>{{ c.date_commande.strftime('%d/%m/%Y') }}</td>
+              <td>
+                {% if c.statut == 'en_attente' %}
+                  <span class="badge bg-warning text-dark">En attente</span>
+                {% elif c.statut in ('payée', 'payé') %}
+                  <span class="badge bg-warning text-dark">⚠ Payée</span>
+                {% elif c.statut == 'en_préparation' %}
+                  <span class="badge bg-primary">En préparation</span>
+                {% elif c.statut == 'expédiée' %}
+                  <span class="badge bg-success">Expédiée</span>
+                {% elif c.statut == 'annulée' %}
+                  <span class="badge bg-danger">Annulée</span>
+                {% else %}
+                  <span class="badge bg-secondary">{{ c.statut }}</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if c.total_ttc %}
+                  <span class="fw-semibold">{{ "%.2f"|format(c.total_ttc) }} €</span>
+                {% else %}
+                  <span class="text-muted">—</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if c.statut in ('payée', 'payé') %}
+                  <a 
+                    href="{{ url_for('compte.reprendre_commande', commande_id=c.id) }}"
+                    class="btn btn-dark btn-sm px-3">
+                    Valider mon adresse
+                  </a>
+                {% else %}
+                  <span class="text-muted">—</span>
+                {% endif %}
+              </td>
 
-    <h2>Commandes sauvegardées</h2>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="alert alert-light border text-center py-4">
+        <i class="bi bi-bag fs-4 d-block mb-2 text-muted"></i>
+        Aucune commande en cours pour le moment.
+      </div>
+    {% endif %}
+  </section>
+
+  <!-- ===== PANIERS ENREGISTRÉS ===== -->
+  <section>
+    <h2 class="h5 fw-semibold text-uppercase mb-3">
+      <i class="bi bi-bookmark me-2"></i>Paniers enregistrés
+    </h2>
 
     {% if sauvegardes %}
-        {% for sauvegarde in sauvegardes %}
-            <p>Sauvegarde {{ sauvegarde.date_creation }}</p>
-            <ul>
-                {% for item in sauvegarde.panier %}
-                    <li>{{ item.nom }} — {{ item.qty }}</li>
+      <div class="row g-4">
+        {% for s in sauvegardes %}
+        <div class="col-md-6 col-lg-4">
+          <div class="card shadow-sm border-0 h-100">
+            <div class="card-body">
+              <p class="text-muted small mb-3">
+                <i class="bi bi-calendar3 me-1"></i>
+                Enregistré le {{ s.date_commande.strftime('%d/%m/%Y à %H:%M') }}
+              </p>
+              <ul class="list-unstyled mb-0">
+                {% for item in s.panier %}
+                <li class="d-flex justify-content-between py-1 border-bottom small">
+                  <span>{{ item.nom }}</span>
+                  <span class="text-muted">× {{ item.qty }}</span>
+                </li>
                 {% endfor %}
-            </ul>
-        {% endfor %}    
+              </ul>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
     {% else %}
-        <p>Aucune commande enregistrée.</p>
+      <div class="alert alert-light border text-center py-4">
+        <i class="bi bi-bookmark fs-4 d-block mb-2 text-muted"></i>
+        Aucun panier enregistré.
+        <div class="mt-2">
+          <a href="{{ url_for('catalogue.index') }}" class="btn btn-dark btn-sm px-4">
+            Découvrir nos vins
+          </a>
+        </div>
+      </div>
     {% endif %}
+  </section>
 
-
-
+</div>
 
 {% endblock %}

@@ -2,14 +2,75 @@
 
 {% block content %}
 
-    <h1>Mon historique</h1>
+<div class="container my-5">
 
-    {% if commandes %}
-        {% for commande in commandes %}
-            <p>Commande {{ commande.id }} — {{ commande.statut }}</p>
-        {% endfor %}
-    {% else %}
-        <p>Aucune commande efffectuée.</p>
-    {% endif %}
+  <div class="mb-5">
+    <h1 class="mb-1">Mon historique</h1>
+    <p class="text-muted">L'ensemble de vos commandes passées et livrées.</p>
+  </div>
+
+  {% if commandes %}
+
+    <div class="table-responsive">
+      <table class="table table-bordered align-middle text-center">
+        <thead class="table-light">
+          <tr>
+            <th>N° commande</th>
+            <th>Date</th>
+            <th>Adresse de livraison</th>
+            <th>Total TTC</th>
+            <th>Statut</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in commandes %}
+          <tr>
+            <td class="fw-semibold">#{{ c.id }}</td>
+            <td>{{ c.date_commande.strftime('%d/%m/%Y') }}</td>
+            <td class="text-start text-muted small">
+              {% if c.adresse_livraison %}
+                {{ c.adresse_livraison }},
+                {{ c.code_postal_livraison }} {{ c.ville_livraison }}
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if c.total_ttc %}
+                <span class="fw-semibold">{{ "%.2f"|format(c.total_ttc) }} €</span>
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if c.statut == 'complétée' %}
+                <span class="badge bg-success">Livrée</span>
+              {% elif c.statut == 'annulée' %}
+                <span class="badge bg-danger">Annulée</span>
+              {% else %}
+                <span class="badge bg-secondary">{{ c.statut }}</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <p class="text-muted small text-end mt-2">
+      {{ commandes | length }} commande{{ 's' if commandes | length > 1 else '' }} au total
+    </p>
+
+  {% else %}
+    <div class="alert alert-light border text-center py-5">
+      <i class="bi bi-clock-history fs-3 d-block mb-3 text-muted"></i>
+      <p class="mb-3">Votre historique est vide pour le moment.</p>
+      <a href="{{ url_for('catalogue.index') }}" class="btn btn-dark px-4">
+        Découvrir nos vins
+      </a>
+    </div>
+  {% endif %}
+
+</div>
 
 {% endblock %}

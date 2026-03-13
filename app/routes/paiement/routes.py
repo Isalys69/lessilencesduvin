@@ -475,6 +475,7 @@ def infos_livraison():
                 current_user.code_postal = form.code_postal_livraison.data
                 current_user.ville       = form.ville_livraison.data
                 current_user.telephone   = form.telephone.data
+                current_user.updated_at  = datetime.utcnow()
                 db.session.commit()
             except Exception as e:
                 db.session.rollback()

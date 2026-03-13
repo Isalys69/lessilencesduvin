@@ -11,6 +11,7 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(128), nullable=False)
     is_admin    = db.Column(db.Boolean, default=False)
     created_at  = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at  = db.Column(db.DateTime, nullable=True)
 
     # Informations de livraison (pré-remplissage formulaire)
     prenom      = db.Column(db.String(80),  nullable=True)

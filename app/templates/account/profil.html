@@ -2,8 +2,103 @@
 
 {% block content %}
 
-	<h1>Mon profil</h1>
+<div class="container my-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
 
-	<p>Email : {{ current_user.email }}</p>
+      <div class="mb-5">
+        <h1 class="mb-1">Mon profil</h1>
+        <p class="text-muted">Gérez vos informations personnelles.</p>
+      </div>
+
+      <!-- Infos du compte (lecture seule) -->
+      <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body px-4 py-3 d-flex justify-content-between">
+          <div>
+            <p class="text-muted small mb-1">Compte créé le</p>
+            <p class="mb-0 fw-semibold">{{ user.created_at.strftime('%d/%m/%Y') }}</p>
+          </div>
+          {% if user.updated_at %}
+          <div class="text-end">
+            <p class="text-muted small mb-1">Dernière modification</p>
+            <p class="mb-0 fw-semibold">{{ user.updated_at.strftime('%d/%m/%Y') }}</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Formulaire de modification -->
+      <div class="card shadow-sm border-0">
+        <div class="card-body px-4 py-4">
+          <h2 class="h6 fw-semibold text-uppercase mb-4">Modifier mes informations</h2>
+
+          <form method="POST" action="{{ url_for('compte.profil') }}">
+
+            <div class="row g-3 mb-3">
+              <div class="col-sm-6">
+                <label for="prenom" class="form-label">Prénom</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="prenom"
+                  name="prenom"
+                  value="{{ user.prenom | default('') }}"
+                  placeholder="Votre prénom"
+                >
+              </div>
+              <div class="col-sm-6">
+                <label for="nom" class="form-label">Nom</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="nom"
+                  name="nom"
+                  value="{{ user.nom | default('') }}"
+                  placeholder="Votre nom"
+                >
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <label for="email" class="form-label">Adresse e-mail</label>
+              <input
+                type="email"
+                class="form-control"
+                id="email"
+                name="email"
+                value="{{ user.email }}"
+                required
+              >
+              <div class="form-text text-muted">
+                Cet e-mail est utilisé pour vous connecter.
+              </div>
+            </div>
+
+            <div class="d-flex gap-3">
+              <button type="submit" class="btn btn-dark px-4">
+                Enregistrer
+              </button>
+              <a href="{{ url_for('catalogue.index') }}" class="btn btn-outline-dark px-4">
+                Annuler
+              </a>
+            </div>
+
+          </form>
+        </div>
+      </div>
+
+      <!-- Liens rapides -->
+      <div class="mt-4 d-flex gap-3 justify-content-center">
+        <a href="{{ url_for('compte.commandes') }}" class="btn btn-outline-dark btn-sm px-3">
+          <i class="bi bi-bag me-1"></i>Mes commandes
+        </a>
+        <a href="{{ url_for('compte.historique') }}" class="btn btn-outline-dark btn-sm px-3">
+          <i class="bi bi-clock-history me-1"></i>Historique
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
 
 {% endblock %}

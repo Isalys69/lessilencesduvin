@@ -2,7 +2,9 @@ from flask import Blueprint, render_template, request, jsonify, session as flask
 from app.extensions import db
 from app.models.commandes import Commande
 from app.models.panier_sauvegarde import PanierSauvegarde
-from flask_login import current_user,login_required
+from flask_login import current_user, login_required
+from datetime import datetime
+from app.extensions import csrf
 import json
 
 
@@ -52,18 +54,21 @@ def historique():
     )
 
 @compte_bp.route("/profil", methods=["GET", "POST"])
+@csrf.exempt
 @login_required
 def profil():
     if request.method == "POST":
-        current_user.nom = request.form.get("nom", "").strip()
-        current_user.prenom = request.form.get("prenom", "").strip()
-        current_user.email = request.form.get("email", "").strip()
+        current_user.nom       = request.form.get("nom", "").strip()
+        current_user.prenom    = request.form.get("prenom", "").strip()
+        current_user.email     = request.form.get("email", "").strip()
+        current_user.updated_at = datetime.utcnow()
 
         db.session.commit()
         flash("Vos informations ont bien été mises à jour.", "success")
         return redirect(url_for("compte.profil"))
 
     return render_template("account/profil.html", user=current_user)
+
 
 @compte_bp.route('/reprendre-commande/<int:commande_id>')
 @login_required

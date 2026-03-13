@@ -86,27 +86,42 @@
     </h2>
 
     {% if sauvegardes %}
-      <div class="row g-4">
-        {% for s in sauvegardes %}
-        <div class="col-md-6 col-lg-4">
-          <div class="card shadow-sm border-0 h-100">
-            <div class="card-body">
-              <p class="text-muted small mb-3">
-                <i class="bi bi-calendar3 me-1"></i>
-                Enregistré le {{ s.date_commande.strftime('%d/%m/%Y à %H:%M') }}
-              </p>
-              <ul class="list-unstyled mb-0">
+      <div class="table-responsive">
+        <table class="table table-bordered align-middle text-center">
+          <thead class="table-light">
+            <tr>
+              <th>Date</th>
+              <th class="text-start">Articles</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in sauvegardes %}
+            <tr>
+              <td class="text-nowrap">
+                {{ s.date_creation.strftime('%d/%m/%Y') }}
+              </td>
+              <td class="text-start small">
                 {% for item in s.panier %}
-                <li class="d-flex justify-content-between py-1 border-bottom small">
-                  <span>{{ item.nom }}</span>
-                  <span class="text-muted">× {{ item.qty }}</span>
-                </li>
+                  <span>{{ item.nom }} <span class="text-muted">× {{ item.qty }}</span></span>{% if not loop.last %}, {% endif %}
                 {% endfor %}
-              </ul>
-            </div>
-          </div>
-        </div>
-        {% endfor %}
+              </td>
+              <td>
+                <div class="d-flex gap-2 justify-content-center">
+                  <form action="{{ url_for('panier.reprendre_panier', sauvegarde_id=s.id) }}" method="POST">
+                    <button type="submit" class="btn btn-dark btn-sm px-3">
+                      <i class="bi bi-bag-plus me-1"></i>Reprendre
+                    </button>
+                  </form>
+                  <form action="{{ url_for('panier.supprimer_panier', sauvegarde_id=s.id) }}" method="POST">
+                    <button type="submit" class="btn btn-sm btn-outline-danger">Supprimer</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
       </div>
     {% else %}
       <div class="alert alert-light border text-center py-4">

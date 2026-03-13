@@ -169,6 +169,38 @@ def compteur():
 
 from flask import flash, redirect, url_for, jsonify, request
 
+@panier_bp.route('/supprimer/<int:sauvegarde_id>', methods=['POST'])
+@csrf.exempt
+@login_required
+def supprimer_panier(sauvegarde_id):
+    sauvegarde = PanierSauvegarde.query.filter_by(
+        id=sauvegarde_id,
+        user_id=current_user.user_id
+    ).first_or_404()
+
+    db.session.delete(sauvegarde)
+    db.session.commit()
+
+    flash("🗑 Panier supprimé.", "info")
+    return redirect(url_for('compte.commandes'))
+
+
+@panier_bp.route('/reprendre/<int:sauvegarde_id>', methods=['POST'])
+@csrf.exempt
+@login_required
+def reprendre_panier(sauvegarde_id):
+    sauvegarde = PanierSauvegarde.query.filter_by(
+        id=sauvegarde_id,
+        user_id=current_user.user_id
+    ).first_or_404()
+
+    panier = json.loads(sauvegarde.contenu_json)
+    set_session_panier(panier)
+
+    flash("✅ Votre panier a été restauré.", "success")
+    return redirect(url_for('panier.index'))
+
+
 @panier_bp.route('/save_cart', methods=['POST'])
 @csrf.exempt
 @login_required

@@ -148,6 +148,11 @@
                     <li><hr class="dropdown-divider"></li>
                     <li><h6 class="dropdown-header small text-muted">Administration</h6></li>
                     <li>
+                      <a class="dropdown-item" href="{{ url_for('admin.vins') }}">
+                        <i class="bi bi-archive me-1"></i>Gérer les vins
+                      </a>
+                    </li>
+                    <li>
                       <a class="dropdown-item" href="{{ url_for('admin.add_wine') }}">
                         <i class="bi bi-plus-circle me-1"></i>Ajouter un vin
                       </a>

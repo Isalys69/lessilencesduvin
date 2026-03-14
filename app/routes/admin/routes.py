@@ -5,7 +5,7 @@ from flask_login import login_required, current_user
 from app.extensions import db
 from app.models.vin import Vin
 from app.models.domaine import Domaine
-from app.models.commandes import Commande
+from app.models.commandes import Commande, CommandeProduit
 
 from app.extensions import csrf
 
@@ -58,3 +58,59 @@ def add_wine():
 def commandes():
     commandes = Commande.query.order_by(Commande.date_commande.desc()).all()
     return render_template("admin/commandes.html", commandes=commandes)
+
+
+@admin_bp.route("/vins", methods=["GET"])
+@login_required
+@admin_required
+def vins():
+    tous_les_vins = Vin.query.join(Domaine).order_by(Domaine.nom.asc(), Vin.nom.asc()).all()
+    return render_template("admin/vins.html", vins=tous_les_vins)
+
+
+@admin_bp.route("/vins/<int:vin_id>/modifier", methods=["GET", "POST"])
+@login_required
+@admin_required
+@csrf.exempt
+def modifier_vin(vin_id):
+    vin = Vin.query.get_or_404(vin_id)
+    domaines = Domaine.query.order_by(Domaine.nom.asc()).all()
+
+    if request.method == "POST":
+        try:
+            vin.nom        = request.form["nom"].strip()
+            vin.domaine_id = int(request.form["domaine_id"])
+            vin.couleur    = request.form["couleur"]
+            vin.annee      = request.form.get("annee") or None
+            vin.prix       = float(str(request.form["prix"]).replace(",", "."))
+            vin.stock      = int(request.form["stock"])
+            vin.photo      = (request.form.get("photo") or "").strip() or None
+            vin.is_active  = "is_active" in request.form
+            db.session.commit()
+            flash("✅ Vin modifié avec succès.", "success")
+            return redirect(url_for("admin.vins"))
+        except Exception as e:
+            db.session.rollback()
+            flash(f"❌ Erreur lors de la modification : {e}", "error")
+
+    return render_template("admin/modifier_vin.html", vin=vin, domaines=domaines)
+
+
+@admin_bp.route("/vins/<int:vin_id>/supprimer", methods=["POST"])
+@login_required
+@admin_required
+@csrf.exempt
+def supprimer_vin(vin_id):
+    vin = Vin.query.get_or_404(vin_id)
+    dans_une_commande = CommandeProduit.query.filter_by(produit_id=vin_id).first()
+
+    if dans_une_commande:
+        vin.is_active = False
+        db.session.commit()
+        flash(f"⚠️ « {vin.nom} » désactivé du catalogue (commandes existantes conservées).", "warning")
+    else:
+        db.session.delete(vin)
+        db.session.commit()
+        flash(f"🗑️ « {vin.nom} » supprimé définitivement.", "success")
+
+    return redirect(url_for("admin.vins"))

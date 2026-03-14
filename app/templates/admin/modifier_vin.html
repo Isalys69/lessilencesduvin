@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container my-5">
+  <div class="row justify-content-center">
+    <div class="col-md-10 col-lg-8">
+
+      <div class="mb-5">
+        <p class="text-muted small mb-1">
+          <a href="{{ url_for('admin.vins') }}" class="text-muted">← Gérer les vins</a>
+        </p>
+        <h1 class="mb-1">Modifier un vin</h1>
+        <p class="text-muted">{{ vin.nom }}{% if vin.annee %} · {{ vin.annee }}{% endif %}</p>
+      </div>
+
+      <div class="card shadow-sm border-0">
+        <div class="card-body px-4 py-4">
+          <form method="POST">
+
+            <!-- Nom -->
+            <div class="mb-4">
+              <label for="nom" class="form-label">Nom du vin</label>
+              <input
+                type="text"
+                class="form-control"
+                id="nom"
+                name="nom"
+                required
+                value="{{ vin.nom }}"
+              >
+            </div>
+
+            <!-- Domaine + Couleur -->
+            <div class="row g-3 mb-4">
+              <div class="col-sm-7">
+                <label for="domaine_id" class="form-label">Domaine</label>
+                <select class="form-select" id="domaine_id" name="domaine_id" required>
+                  {% for d in domaines %}
+                    <option value="{{ d.id }}" {{ 'selected' if d.id == vin.domaine_id }}>{{ d.nom }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-sm-5">
+                <label for="couleur" class="form-label">Couleur</label>
+                <select class="form-select" id="couleur" name="couleur" required>
+                  <option value="rouge"  {{ 'selected' if vin.couleur == 'rouge'  }}>Rouge</option>
+                  <option value="blanc"  {{ 'selected' if vin.couleur == 'blanc'  }}>Blanc</option>
+                  <option value="rosé"   {{ 'selected' if vin.couleur == 'rosé'   }}>Rosé</option>
+                  <option value="orange" {{ 'selected' if vin.couleur == 'orange' }}>Orange</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Année + Prix + Stock -->
+            <div class="row g-3 mb-4">
+              <div class="col-sm-4">
+                <label for="annee" class="form-label">Millésime</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  id="annee"
+                  name="annee"
+                  min="1900"
+                  max="2100"
+                  value="{{ vin.annee or '' }}"
+                >
+                <div class="form-text">Facultatif</div>
+              </div>
+              <div class="col-sm-4">
+                <label for="prix" class="form-label">Prix (€)</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="prix"
+                  name="prix"
+                  required
+                  value="{{ '%.2f'|format(vin.prix) }}"
+                >
+              </div>
+              <div class="col-sm-4">
+                <label for="stock" class="form-label">Stock</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  id="stock"
+                  name="stock"
+                  required
+                  min="0"
+                  value="{{ vin.stock }}"
+                >
+              </div>
+            </div>
+
+            <!-- Photo -->
+            <div class="mb-4">
+              <label for="photo" class="form-label">Nom du fichier image</label>
+              <input
+                type="text"
+                class="form-control"
+                id="photo"
+                name="photo"
+                value="{{ vin.photo or '' }}"
+                placeholder="ex : domaine_nom_2021.jpg"
+              >
+              <div class="form-text">Facultatif — fichier à déposer dans <code>static/img/vins/</code></div>
+            </div>
+
+            <!-- Statut catalogue -->
+            <div class="mb-5">
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  id="is_active"
+                  name="is_active"
+                  {{ 'checked' if vin.is_active }}
+                >
+                <label class="form-check-label" for="is_active">
+                  Visible dans le catalogue (site)
+                </label>
+              </div>
+              <div class="form-text">Décochez pour masquer ce vin du catalogue public sans le supprimer.</div>
+            </div>
+
+            <div class="d-flex gap-3">
+              <button type="submit" class="btn btn-dark px-4">
+                <i class="bi bi-check2 me-1"></i>Enregistrer les modifications
+              </button>
+              <a href="{{ url_for('admin.vins') }}" class="btn btn-outline-dark px-4">
+                Annuler
+              </a>
+            </div>
+
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}

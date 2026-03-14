@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container my-5">
+
+  <div class="mb-5 d-flex justify-content-between align-items-end">
+    <div>
+      <p class="text-muted small mb-1">
+        <a href="{{ url_for('admin.commandes') }}" class="text-muted">← Toutes les commandes</a>
+      </p>
+      <h1 class="mb-1">Gestion des vins</h1>
+      <p class="text-muted mb-0">{{ vins|length }} vin{{ 's' if vins|length != 1 }} au total</p>
+    </div>
+    <a href="{{ url_for('admin.add_wine') }}" class="btn btn-dark px-4">
+      <i class="bi bi-plus-circle me-1"></i>Ajouter un vin
+    </a>
+  </div>
+
+  {% if vins %}
+  <div class="card shadow-sm border-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0 align-middle">
+        <thead class="table-light">
+          <tr>
+            <th class="ps-4">Nom</th>
+            <th>Domaine</th>
+            <th>Couleur</th>
+            <th class="text-center">Millésime</th>
+            <th class="text-end">Prix</th>
+            <th class="text-center">Stock</th>
+            <th class="text-center">Statut</th>
+            <th class="text-end pe-4">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for vin in vins %}
+          <tr class="{{ 'opacity-50' if not vin.is_active }}">
+            <td class="ps-4 fw-semibold">{{ vin.nom }}</td>
+            <td class="text-muted">{{ vin.domaine.nom }}</td>
+            <td>
+              {% set couleur_map = {
+                'rouge':  ('danger',  'Rouge'),
+                'blanc':  ('warning', 'Blanc'),
+                'rosé':   ('pink',    'Rosé'),
+                'orange': ('orange',  'Orange')
+              } %}
+              {% set badge_color = couleur_map.get(vin.couleur, ('secondary', vin.couleur)) %}
+              <span class="badge bg-{{ badge_color[0] }} text-{{ 'dark' if vin.couleur in ['blanc', 'orange'] else 'white' }}">
+                {{ badge_color[1] }}
+              </span>
+            </td>
+            <td class="text-center text-muted">{{ vin.annee or '—' }}</td>
+            <td class="text-end">{{ "%.2f"|format(vin.prix) }} €</td>
+            <td class="text-center">
+              {% if vin.stock == 0 %}
+                <span class="badge bg-danger">Épuisé</span>
+              {% elif vin.stock <= 3 %}
+                <span class="badge bg-warning text-dark">{{ vin.stock }}</span>
+              {% else %}
+                <span class="text-muted">{{ vin.stock }}</span>
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if vin.is_active %}
+                <span class="badge bg-success">Actif</span>
+              {% else %}
+                <span class="badge bg-secondary">Inactif</span>
+              {% endif %}
+            </td>
+            <td class="text-end pe-4">
+              <div class="d-flex gap-2 justify-content-end">
+                <a href="{{ url_for('admin.modifier_vin', vin_id=vin.id) }}" class="btn btn-sm btn-outline-dark">
+                  <i class="bi bi-pencil"></i>
+                </a>
+                <form method="POST" action="{{ url_for('admin.supprimer_vin', vin_id=vin.id) }}"
+                      onsubmit="return confirm('Supprimer ou désactiver « {{ vin.nom }} » ?');">
+                  <button type="submit" class="btn btn-sm btn-outline-danger">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {% else %}
+  <div class="text-center py-5 text-muted">
+    <i class="bi bi-wine fs-1 mb-3 d-block"></i>
+    <p class="mb-3">Aucun vin dans le catalogue pour le moment.</p>
+    <a href="{{ url_for('admin.add_wine') }}" class="btn btn-dark px-4">
+      <i class="bi bi-plus-circle me-1"></i>Ajouter le premier vin
+    </a>
+  </div>
+  {% endif %}
+
+</div>
+
+{% endblock %}

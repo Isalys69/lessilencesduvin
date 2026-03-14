@@ -1,42 +1,127 @@
-<h2>Ajouter un vin</h2>
+{% extends "base.html" %}
 
-<form method="POST">
+{% block content %}
 
-    <label>Nom</label>
-    <input type="text" name="nom" required>
+<div class="container my-5">
+  <div class="row justify-content-center">
+    <div class="col-md-10 col-lg-8">
 
-    <label>Domaine</label>
-    <select name="domaine_id">
-        {% for d in domaines %}
-            <option value="{{ d.id }}">{{ d.nom }}</option>
-        {% endfor %}
-    </select>
+      <div class="mb-5">
+        <p class="text-muted small mb-1">
+          <a href="{{ url_for('admin.commandes') }}" class="text-muted">← Toutes les commandes</a>
+        </p>
+        <h1 class="mb-1">Ajouter un vin</h1>
+        <p class="text-muted">Renseignez les informations du nouveau vin à publier dans le catalogue.</p>
+      </div>
 
-    <label>Couleur</label>
-    <select name="couleur" required>
-        <option value="blanc">Blanc</option>
-        <option value="rouge">Rouge</option>
-        <option value="rosé">Rosé</option>
-        <option value="orange">Orange</option>
-    </select>
+      <div class="card shadow-sm border-0">
+        <div class="card-body px-4 py-4">
+          <form method="POST">
 
-    <label>Année</label>
-    <input type="number" name="annee">
+            <!-- Nom -->
+            <div class="mb-4">
+              <label for="nom" class="form-label">Nom du vin</label>
+              <input
+                type="text"
+                class="form-control"
+                id="nom"
+                name="nom"
+                required
+                placeholder="ex : Résilience 2021"
+              >
+            </div>
 
-    <label>Prix (€)</label>
-    <input type="text" name="prix" required>
+            <!-- Domaine + Couleur -->
+            <div class="row g-3 mb-4">
+              <div class="col-sm-7">
+                <label for="domaine_id" class="form-label">Domaine</label>
+                <select class="form-select" id="domaine_id" name="domaine_id" required>
+                  <option value="" disabled selected>— Choisir un domaine —</option>
+                  {% for d in domaines %}
+                    <option value="{{ d.id }}">{{ d.nom }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-sm-5">
+                <label for="couleur" class="form-label">Couleur</label>
+                <select class="form-select" id="couleur" name="couleur" required>
+                  <option value="" disabled selected>— Couleur —</option>
+                  <option value="rouge">Rouge</option>
+                  <option value="blanc">Blanc</option>
+                  <option value="rosé">Rosé</option>
+                  <option value="orange">Orange</option>
+                </select>
+              </div>
+            </div>
 
-    <label>Stock</label>
-    <input type="number" name="stock" required min="0">
+            <!-- Année + Prix + Stock -->
+            <div class="row g-3 mb-4">
+              <div class="col-sm-4">
+                <label for="annee" class="form-label">Millésime</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  id="annee"
+                  name="annee"
+                  min="1900"
+                  max="2100"
+                  placeholder="ex : 2021"
+                >
+                <div class="form-text">Facultatif</div>
+              </div>
+              <div class="col-sm-4">
+                <label for="prix" class="form-label">Prix (€)</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="prix"
+                  name="prix"
+                  required
+                  placeholder="ex : 18.50"
+                >
+              </div>
+              <div class="col-sm-4">
+                <label for="stock" class="form-label">Stock</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  id="stock"
+                  name="stock"
+                  required
+                  min="0"
+                  placeholder="ex : 12"
+                >
+              </div>
+            </div>
 
-    <label>Nom du fichier image</label>
-    <input type="text" name="photo" placeholder="arpents_auxerrois_2019.jpg">
+            <!-- Photo -->
+            <div class="mb-5">
+              <label for="photo" class="form-label">Nom du fichier image</label>
+              <input
+                type="text"
+                class="form-control"
+                id="photo"
+                name="photo"
+                placeholder="ex : domaine_nom_2021.jpg"
+              >
+              <div class="form-text">Facultatif — fichier à déposer dans <code>static/img/vins/</code></div>
+            </div>
 
-    <button type="submit">Ajouter</button>
-</form>
+            <div class="d-flex gap-3">
+              <button type="submit" class="btn btn-dark px-4">
+                <i class="bi bi-plus-circle me-1"></i>Ajouter le vin
+              </button>
+              <a href="{{ url_for('catalogue.index') }}" class="btn btn-outline-dark px-4">
+                Annuler
+              </a>
+            </div>
 
-{% with messages = get_flashed_messages(with_categories=true) %}
-  {% for category, msg in messages %}
-    <p>{{ msg }}</p>
-  {% endfor %}
-{% endwith %}
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}

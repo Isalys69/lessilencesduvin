@@ -7,6 +7,9 @@ from app.models.vin import Vin
 from app.models.domaine import Domaine
 from app.models.commandes import Commande
 
+from app.extensions import csrf
+
+
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
 
@@ -23,6 +26,7 @@ def admin_required(f):
 @admin_bp.route("/add-wine", methods=["GET", "POST"])
 @login_required
 @admin_required
+@csrf.exempt
 def add_wine():
     domaines = Domaine.query.order_by(Domaine.nom.asc()).all()
 

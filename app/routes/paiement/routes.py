@@ -552,9 +552,53 @@ def success():
         flash("Désolé, le stock n'était plus disponible. Votre paiement a été remboursé automatiquement.", "warning")
         return render_template('paiement/cancel.html')
 
-    if commande.statut != 'payé':
-        # webhook pas encore passé (délai), ou commande encore en_attente
-        flash("Votre paiement est en cours de confirmation. Veuillez patienter quelques secondes et rafraîchir la page.", "warning")
+    if commande.statut == 'en_attente':
+        # Vérifier directement auprès de Stripe si le paiement est confirmé
+        # (fallback quand le webhook n'a pas encore été reçu, ou stripe listen absent en dev)
+        try:
+            stripe_session_obj = stripe.checkout.Session.retrieve(session_id)
+            if stripe_session_obj.payment_status != 'paid':
+                # Paiement pas encore confirmé côté Stripe
+                return render_template('paiement/pending.html')
+
+            # Stripe confirme le paiement : décrémentation stock + mise à jour statut
+            from sqlalchemy import update as sa_update
+            lignes = CommandeProduit.query.filter_by(commande_id=commande.id).all()
+            if not lignes:
+                current_app.logger.error(f"[SUCCESS] Commande {commande.id} sans lignes produits")
+                return render_template('paiement/pending.html')
+
+            try:
+                for l in lignes:
+                    stmt = (
+                        sa_update(Vin)
+                        .where(Vin.id == int(l.produit_id))
+                        .where(Vin.is_active == True)
+                        .where(Vin.stock >= int(l.quantite))
+                        .values(stock=Vin.stock - int(l.quantite))
+                    )
+                    result = db.session.execute(stmt)
+                    if result.rowcount != 1:
+                        raise ValueError(f"Stock insuffisant pour vin_id={l.produit_id}")
+
+                payment_intent_id = stripe_session_obj.get("payment_intent")
+                commande.statut = 'payé'
+                if payment_intent_id:
+                    commande.stripe_payment_intent_id = payment_intent_id
+                db.session.commit()
+                current_app.logger.info(f"[SUCCESS] Commande {commande.id} -> payé (fallback Stripe API)")
+            except Exception as e:
+                db.session.rollback()
+                current_app.logger.error(f"[SUCCESS] Erreur stock commande {commande.id}: {e}")
+                return render_template('paiement/pending.html')
+
+        except Exception as e:
+            current_app.logger.error(f"[SUCCESS] Erreur Stripe retrieve session={session_id}: {e}")
+            return render_template('paiement/pending.html')
+
+    if commande.statut not in ('payé',):
+        # statut inattendu (abandonnee, complétée, etc.)
+        flash("Cette commande ne peut pas être confirmée.", "warning")
         return render_template('paiement/cancel.html')
 
     # Stocker l'ID dans la session Flask

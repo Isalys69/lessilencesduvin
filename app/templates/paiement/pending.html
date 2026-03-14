@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container my-5 text-center">
+  <div class="mb-4">
+    <div class="spinner-border text-dark" role="status" style="width: 3rem; height: 3rem;">
+      <span class="visually-hidden">Chargement...</span>
+    </div>
+  </div>
+  <h2 class="fw-bold mb-3">Confirmation en cours…</h2>
+  <p class="lead text-muted">Votre paiement a bien été reçu par Stripe.<br>
+  Nous finalisons la confirmation de votre commande, merci de patienter.</p>
+  <p class="text-muted small mt-3">Cette page se rafraîchit automatiquement.</p>
+</div>
+
+<script>
+  // Rafraîchit la page toutes les 3 secondes jusqu'à confirmation du webhook
+  setTimeout(() => { window.location.reload(); }, 3000);
+</script>
+{% endblock %}

@@ -1,4 +1,5 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from functools import wraps
+from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
 from flask_login import login_required, current_user
 
 from app.extensions import db
@@ -9,8 +10,19 @@ from app.models.commandes import Commande
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
 
+def admin_required(f):
+    """Décorateur : réserve la route aux utilisateurs is_admin=True."""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or not current_user.is_admin:
+            abort(403)
+        return f(*args, **kwargs)
+    return decorated_function
+
+
 @admin_bp.route("/add-wine", methods=["GET", "POST"])
 @login_required
+@admin_required
 def add_wine():
     domaines = Domaine.query.order_by(Domaine.nom.asc()).all()
 
@@ -38,10 +50,7 @@ def add_wine():
 
 @admin_bp.route("/commandes", methods=["GET"])
 @login_required
+@admin_required
 def commandes():
-    commandes = (
-        Commande.query.order_by(Commande.date_commande.desc()).all()
-        if hasattr(Commande, "query")
-        else []
-    )
-    return render_templa_
+    commandes = Commande.query.order_by(Commande.date_commande.desc()).all()
+    return render_template("admin/commandes.html", commandes=commandes)

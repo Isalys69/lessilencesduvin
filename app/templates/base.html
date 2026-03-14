@@ -144,6 +144,20 @@
                         >Historique
                       </a>
                     </li>
+                    {% if current_user.is_admin %}
+                    <li><hr class="dropdown-divider"></li>
+                    <li><h6 class="dropdown-header small text-muted">Administration</h6></li>
+                    <li>
+                      <a class="dropdown-item" href="{{ url_for('admin.add_wine') }}">
+                        <i class="bi bi-plus-circle me-1"></i>Ajouter un vin
+                      </a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="{{ url_for('admin.commandes') }}">
+                        <i class="bi bi-list-ul me-1"></i>Toutes les commandes
+                      </a>
+                    </li>
+                    {% endif %}
                     <li><hr class="dropdown-divider"></li>
                     <li><a class="dropdown-item text-danger fw-semibold" href="{{ url_for('auth.logout') }}">Me déconnecter</a></li>
                   </ul>

@@ -14,12 +14,13 @@ compte_bp = Blueprint('compte', __name__, url_prefix='/compte')
 @login_required
 def commandes():
 
+    STATUTS_EN_COURS = ("payé", "complétée", "en_préparation", "expédiée")
     commandes = Commande.query.filter(
         (
             (Commande.user_id == current_user.user_id) |
             (Commande.email_client == current_user.email)
         ),
-        Commande.statut != "complétée"
+        Commande.statut.in_(STATUTS_EN_COURS)
     ).order_by(Commande.date_commande.desc()).all()
 
 
@@ -40,12 +41,13 @@ def commandes():
 @login_required
 def historique():
 
+    STATUTS_TERMINES = ("livrée", "annulée")
     commandes = Commande.query.filter(
         (
             (Commande.user_id == current_user.user_id) |
             (Commande.email_client == current_user.email)
         ),
-        Commande.statut == "complétée"
+        Commande.statut.in_(STATUTS_TERMINES)
     ).order_by(Commande.date_commande.desc()).all()
 
     return render_template(

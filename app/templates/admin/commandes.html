@@ -1,52 +1,116 @@
 {% extends "base.html" %}
 
-{% block title %}Commandes{% endblock %}
-
 {% block content %}
-<div class="container" style="max-width: 1200px; margin: 2rem auto;">
 
-  <h1>Commandes</h1>
+<div class="container my-5">
+
+  <div class="mb-5 d-flex justify-content-between align-items-end">
+    <div>
+      <p class="text-muted small mb-1">
+        <a href="{{ url_for('admin.vins') }}" class="text-muted">← Gérer les vins</a>
+      </p>
+      <h1 class="mb-1">Toutes les commandes</h1>
+      <p class="text-muted mb-0">{{ commandes|length }} commande{{ 's' if commandes|length != 1 }}</p>
+    </div>
+  </div>
 
   {% if commandes %}
-    <table style="width:100%; border-collapse: collapse; margin-top: 1.5rem;">
-      <thead>
-        <tr style="border-bottom: 2px solid #ddd; text-align: left;">
-          <th style="padding: 8px;">#</th>
-          <th style="padding: 8px;">Client</th>
-          <th style="padding: 8px;">Email</th>
-          <th style="padding: 8px;">Ville</th>
-          <th style="padding: 8px;">Montant</th>
-          <th style="padding: 8px;">Statut</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for commande in commandes %}
-          <tr style="border-bottom: 1px solid #eee;">
-            <td style="padding: 8px;">
-              {{ commande.id }}
+  <div class="card shadow-sm border-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0 align-middle">
+        <thead class="table-light">
+          <tr>
+            <th class="ps-4 text-muted fw-normal">#</th>
+            <th>Date</th>
+            <th>Client</th>
+            <th>Email</th>
+            <th>Ville</th>
+            <th class="text-end">Montant</th>
+            <th class="text-center">Statut</th>
+            <th class="text-end pe-4">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in commandes %}
+          <tr>
+            <td class="ps-4 text-muted small">{{ c.id }}</td>
+            <td class="text-muted small">
+              {{ c.date_commande.strftime('%d/%m/%Y') if c.date_commande else '—' }}
             </td>
-            <td style="padding: 8px;">
-              {{ commande.prenom_client }} {{ commande.nom_client }}
+            <td class="fw-semibold">
+              {{ c.prenom_client or '' }} {{ c.nom_client or '' }}
+              {% if not c.prenom_client and not c.nom_client %}
+                <span class="text-muted">—</span>
+              {% endif %}
             </td>
-            <td style="padding: 8px;">
-              {{ commande.email_client }}
+            <td class="text-muted small">{{ c.email_client or '—' }}</td>
+            <td class="text-muted">{{ c.ville_livraison or '—' }}</td>
+            <td class="text-end fw-semibold">
+              {% if c.total_ttc %}
+                {{ "%.2f"|format(c.total_ttc) }} €
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
             </td>
-            <td style="padding: 8px;">
-              {{ commande.ville_livraison }}
+            <td class="text-center">
+              {% if c.statut == 'en_attente' %}
+                <span class="badge bg-secondary">En attente</span>
+              {% elif c.statut == 'payé' or c.statut == 'payee' %}
+                <span class="badge bg-warning text-dark">
+                  <i class="bi bi-exclamation-triangle me-1"></i>Payé
+                </span>
+              {% elif c.statut == 'complétée' or c.statut == 'completee' %}
+                <span class="badge bg-primary">Adresse reçue</span>
+              {% elif c.statut == 'en_préparation' or c.statut == 'en_preparation' %}
+                <span class="badge bg-info text-dark">En préparation</span>
+              {% elif c.statut == 'expédiée' or c.statut == 'expediee' %}
+                <span class="badge bg-success">Expédiée</span>
+              {% elif c.statut == 'livrée' or c.statut == 'livree' %}
+                <span class="badge bg-dark">Livrée</span>
+              {% elif c.statut == 'annulée' or c.statut == 'annulee' %}
+                <span class="badge bg-danger">Annulée</span>
+              {% else %}
+                <span class="badge bg-light text-dark">{{ c.statut }}</span>
+              {% endif %}
             </td>
-            <td style="padding: 8px;">
-              {{ commande.total_ttc }} €
-            </td>
-            <td style="padding: 8px;">
-              {{ commande.statut }}
+            <td class="text-end pe-4">
+              {% set prochaines = transitions.get(c.statut, []) %}
+              {% if prochaines %}
+                <div class="d-flex gap-1 justify-content-end flex-wrap">
+                  {% for cible in prochaines %}
+                    {% set cfg = labels.get(cible, ('secondary', 'bi-arrow-right', cible)) %}
+                    <form method="POST"
+                          action="{{ url_for('admin.changer_statut', commande_id=c.id) }}"
+                          {% if cible == 'annulée' %}
+                          onsubmit="return confirm('Annuler et rembourser la commande #{{ c.id }} ?');"
+                          {% endif %}>
+                      <input type="hidden" name="nouveau_statut" value="{{ cible }}">
+                      <button type="submit"
+                              class="btn btn-sm btn-outline-{{ cfg[0] }}"
+                              title="{{ cfg[2] }}">
+                        <i class="bi {{ cfg[1] }} me-1"></i>{{ cfg[2] }}
+                      </button>
+                    </form>
+                  {% endfor %}
+                </div>
+              {% else %}
+                <span class="text-muted small">—</span>
+              {% endif %}
             </td>
           </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
   {% else %}
-    <p>Aucune commande pour le moment.</p>
+  <div class="text-center py-5 text-muted">
+    <i class="bi bi-inbox fs-1 mb-3 d-block"></i>
+    <p class="mb-0">Aucune commande pour le moment.</p>
+  </div>
   {% endif %}
 
 </div>
+
 {% endblock %}

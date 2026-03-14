@@ -43,8 +43,10 @@
               {% endif %}
             </td>
             <td>
-              {% if c.statut == 'complétée' %}
-                <span class="badge bg-success">Livrée</span>
+              {% if c.statut == 'livrée' %}
+                <span class="badge bg-dark">
+                  <i class="bi bi-check2-circle me-1"></i>Livrée
+                </span>
               {% elif c.statut == 'annulée' %}
                 <span class="badge bg-danger">Annulée</span>
               {% else %}

@@ -33,16 +33,20 @@
               <td class="fw-semibold">#{{ c.id }}</td>
               <td>{{ c.date_commande.strftime('%d/%m/%Y') }}</td>
               <td>
-                {% if c.statut == 'en_attente' %}
-                  <span class="badge bg-warning text-dark">En attente</span>
-                {% elif c.statut in ('payée', 'payé') %}
-                  <span class="badge bg-warning text-dark">⚠ Payée</span>
+                {% if c.statut in ('payée', 'payé') %}
+                  <span class="badge bg-warning text-dark">
+                    <i class="bi bi-exclamation-triangle me-1"></i>Adresse requise
+                  </span>
+                {% elif c.statut == 'complétée' %}
+                  <span class="badge bg-primary">Confirmée</span>
                 {% elif c.statut == 'en_préparation' %}
-                  <span class="badge bg-primary">En préparation</span>
+                  <span class="badge bg-info text-dark">
+                    <i class="bi bi-box-seam me-1"></i>En préparation
+                  </span>
                 {% elif c.statut == 'expédiée' %}
-                  <span class="badge bg-success">Expédiée</span>
-                {% elif c.statut == 'annulée' %}
-                  <span class="badge bg-danger">Annulée</span>
+                  <span class="badge bg-success">
+                    <i class="bi bi-truck me-1"></i>Expédiée
+                  </span>
                 {% else %}
                   <span class="badge bg-secondary">{{ c.statut }}</span>
                 {% endif %}

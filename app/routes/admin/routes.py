@@ -1,4 +1,5 @@
 from functools import wraps
+import os, stripe
 from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
 from flask_login import login_required, current_user
 
@@ -6,8 +7,12 @@ from app.extensions import db
 from app.models.vin import Vin
 from app.models.domaine import Domaine
 from app.models.commandes import Commande, CommandeProduit
+from app.utils.stripe_tools import safe_refund, TRANSITIONS_ADMIN, LABELS_STATUT
+from app.utils.email import send_plain_email
 
 from app.extensions import csrf
+
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
@@ -57,7 +62,45 @@ def add_wine():
 @admin_required
 def commandes():
     commandes = Commande.query.order_by(Commande.date_commande.desc()).all()
-    return render_template("admin/commandes.html", commandes=commandes)
+    return render_template(
+        "admin/commandes.html",
+        commandes=commandes,
+        transitions=TRANSITIONS_ADMIN,
+        labels=LABELS_STATUT,
+    )
+
+
+@admin_bp.route("/commandes/<int:commande_id>/statut", methods=["POST"])
+@login_required
+@admin_required
+@csrf.exempt
+def changer_statut(commande_id):
+    commande = Commande.query.get_or_404(commande_id)
+    nouveau_statut = request.form.get("nouveau_statut", "").strip()
+
+    transitions_autorisees = TRANSITIONS_ADMIN.get(commande.statut, [])
+    if nouveau_statut not in transitions_autorisees:
+        flash(f"❌ Transition {commande.statut} → {nouveau_statut} non autorisée.", "error")
+        return redirect(url_for("admin.commandes"))
+
+    if nouveau_statut == "annulée":
+        ok, info = safe_refund(commande)
+        if ok:
+            flash(f"💳 Remboursement Stripe effectué (ref. {info}).", "success")
+        elif commande.stripe_payment_intent_id:
+            flash(f"⚠️ Remboursement échoué : {info}", "warning")
+        # Annulation même si remboursement échoue (admin peut gérer manuellement)
+
+    ancien_statut = commande.statut
+    commande.statut = nouveau_statut
+    db.session.commit()
+    flash(f"✅ Commande #{commande_id} : {ancien_statut} → {nouveau_statut}.", "success")
+
+    # Email client si adresse connue
+    if commande.email_client and nouveau_statut in ("expédiée", "livrée", "annulée"):
+        _notifier_client(commande, nouveau_statut)
+
+    return redirect(url_for("admin.commandes"))
 
 
 @admin_bp.route("/vins", methods=["GET"])
@@ -114,3 +157,43 @@ def supprimer_vin(vin_id):
         flash(f"🗑️ « {vin.nom} » supprimé définitivement.", "success")
 
     return redirect(url_for("admin.vins"))
+
+
+# ──────────────────────────────────────────────
+# Helper privé : notification client par email
+# ──────────────────────────────────────────────
+def _notifier_client(commande, statut):
+    from flask import current_app
+    messages = {
+        "expédiée": (
+            f"Commande #{commande.id} expédiée – Les Silences du Vin",
+            f"Bonjour,\n\nVotre commande #{commande.id} vient d'être expédiée.\n\n"
+            f"Les Silences du Vin"
+        ),
+        "livrée": (
+            f"Commande #{commande.id} livrée – Les Silences du Vin",
+            f"Bonjour,\n\nNous espérons que vous avez bien reçu votre commande #{commande.id}.\n"
+            f"Merci pour votre confiance !\n\nLes Silences du Vin"
+        ),
+        "annulée": (
+            f"Commande #{commande.id} annulée – Les Silences du Vin",
+            f"Bonjour,\n\nVotre commande #{commande.id} a été annulée.\n"
+            f"Si un paiement avait été effectué, le remboursement a été initié.\n\n"
+            f"Les Silences du Vin"
+        ),
+    }
+    if statut not in messages:
+        return
+    subject, body = messages[statut]
+    try:
+        send_plain_email(
+            subject=subject,
+            body=body,
+            sender=current_app.config["MAIL_USERNAME"],
+            recipients=[commande.email_client],
+            reply_to="contact@lessilencesduvin.com",
+        )
+    except Exception as e:
+        current_app.logger.error(
+            f"[ADMIN] Email notif client commande {commande.id} ({statut}): {type(e).__name__} - {e}"
+        )

@@ -1,16 +1,43 @@
 {% extends "base.html" %}
+
 {% block content %}
-<div class="container mt-5" style="max-width:400px;">
-  <h3>Connexion</h3>
-  <form method="POST">
-    {{ form.hidden_tag() }}
-    <div class="mb-3">
-      {{ form.email.label }} {{ form.email(class="form-control") }}
+
+<div class="container my-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+
+      <div class="mb-5 text-center">
+        <h1 class="mb-1">Connexion</h1>
+        <p class="text-muted">Bienvenue, chaque vin a une voix.</p>
+      </div>
+
+      <div class="card shadow-sm border-0">
+        <div class="card-body px-4 py-4">
+          <form method="POST">
+            {{ form.hidden_tag() }}
+
+            <div class="mb-3">
+              {{ form.email.label(class="form-label") }}
+              {{ form.email(class="form-control") }}
+            </div>
+
+            <div class="mb-4">
+              {{ form.password.label(class="form-label") }}
+              {{ form.password(class="form-control") }}
+            </div>
+
+            {{ form.submit(class="btn btn-dark w-100") }}
+          </form>
+        </div>
+      </div>
+
+      <p class="text-center text-muted small mt-4">
+        Pas encore de compte ?
+        <a href="{{ url_for('auth.register') }}" class="text-dark fw-semibold">Créer un compte</a>
+      </p>
+
     </div>
-    <div class="mb-3">
-      {{ form.password.label }} {{ form.password(class="form-control") }}
-    </div>
-    {{ form.submit(class="btn btn-dark w-100") }}
-  </form>
+  </div>
 </div>
+
 {% endblock %}

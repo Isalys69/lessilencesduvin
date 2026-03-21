@@ -17,3 +17,8 @@ def cgv():
 def confidentialite():
     compteur = get_compteur_panier()
     return render_template('legales/confidentialite.html', compteur=compteur)
+
+@legales_bp.route('/livraison')
+def livraison():
+    compteur = get_compteur_panier()
+    return render_template('legales/livraison.html', compteur=compteur)

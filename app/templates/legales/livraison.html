@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block content %}
+
+  <head>
+    <meta charset="UTF-8">
+    <title>Livraison & Retours - Les Silences du Vin</title>
+  </head>
+
+  <body>
+    <div class="container py-5" style="max-width:860px;">
+
+      <h1 class="mb-1">Livraison &amp; Retours</h1>
+      <p class="text-muted mb-5">Mise à jour du 21 mars 2026</p>
+
+      <!-- LIVRAISON -->
+      <h2 class="mt-4"><i class="bi bi-truck me-2"></i>Livraison</h2>
+
+      <h5 class="mt-3">Zone de livraison</h5>
+      <p>Les livraisons sont effectuées uniquement en <strong>France métropolitaine</strong>.</p>
+
+      <h5 class="mt-3">Délais</h5>
+      <p>Le délai indicatif de livraison est de <strong>5 jours ouvrés</strong> à compter de la validation de votre commande. Ce délai peut varier selon la disponibilité des produits et la zone de livraison.</p>
+
+      <h5 class="mt-3">Frais de livraison</h5>
+      <table class="table table-bordered w-auto">
+        <thead class="table-light">
+          <tr>
+            <th>Montant de la commande</th>
+            <th>Frais de port</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>100 € et plus</td>
+            <td><strong class="text-success">Gratuit</strong></td>
+          </tr>
+          <tr>
+            <td>Moins de 100 €</td>
+            <td>9,90 €</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>L'emballage spécialisé pour protéger les bouteilles est inclus dans ces tarifs.</p>
+
+      <h5 class="mt-3">Modalités</h5>
+      <p>La livraison s'effectue à l'adresse indiquée lors de la commande. En cas d'absence, un avis de passage sera laissé. Les colis non retirés dans les délais impartis seront retournés à nos entrepôts.</p>
+
+      <h5 class="mt-3">Réception — bouteilles endommagées</h5>
+      <p>Vérifiez l'état du colis en présence du livreur. En cas de casse lors du transport :</p>
+      <ul>
+        <li>Signalez immédiatement le dommage au transporteur</li>
+        <li><a href="{{ url_for('contact.index') }}">Contactez-nous</a> dans les <strong>48h</strong> avec photos à l'appui</li>
+        <li>Conservez l'emballage et les bouteilles endommagées</li>
+      </ul>
+      <p>Nous procéderons au remplacement ou au remboursement dans les plus brefs délais.</p>
+
+      <hr class="my-5">
+
+      <!-- RETOURS -->
+      <h2 class="mt-4"><i class="bi bi-arrow-return-left me-2"></i>Retours &amp; Remboursements</h2>
+
+      <h5 class="mt-3">Droit de rétractation</h5>
+      <p>Conformément à l'article L221-28 du Code de la consommation, vous disposez d'un délai de <strong>14 jours</strong> à compter de la réception de votre commande pour exercer votre droit de rétractation, sans avoir à justifier de motifs ni à payer de pénalité.</p>
+
+      <h5 class="mt-3">Comment exercer ce droit ?</h5>
+      <p>Notifiez-nous votre décision via notre <a href="{{ url_for('contact.index') }}">formulaire de contact</a>.</p>
+
+      <h5 class="mt-3">Retour des produits</h5>
+      <p>Les produits doivent être retournés dans leur emballage d'origine, en parfait état, accompagnés de tous les accessoires. <strong>Les frais de retour sont à votre charge.</strong></p>
+
+      <h5 class="mt-3">Remboursement</h5>
+      <p>En cas de rétractation, nous vous rembourserons tous les paiements reçus, y compris les frais de livraison initiaux, dans un délai de <strong>14 jours</strong> à compter de la récupération des produits.</p>
+
+      <hr class="my-5">
+
+      <p class="text-muted">Pour toute question : <a href="{{ url_for('contact.index') }}">contactez-nous</a>.</p>
+
+    </div>
+  </body>
+
+{% endblock %}

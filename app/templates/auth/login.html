@@ -18,12 +18,12 @@
 
             <div class="mb-3">
               {{ form.email.label(class="form-label") }}
-              {{ form.email(class="form-control") }}
+              {{ form.email(class="form-control", type="email", autocomplete="email") }}
             </div>
 
             <div class="mb-4">
               {{ form.password.label(class="form-label") }}
-              {{ form.password(class="form-control") }}
+              {{ form.password(class="form-control", autocomplete="current-password") }}
             </div>
 
             {{ form.submit(class="btn btn-dark w-100") }}

@@ -106,8 +106,10 @@
             </li>
 
             <li class="nav-item mx-2">
-              <a class="nav-link px-3 py-2 fw-semibold" href="{{ url_for('panier.index') }}">
-                🛒 Panier (<span id="compteur-panier">{{ panier_count or 0 }}</span>)
+              <a class="nav-link px-3 py-2 fw-semibold"
+                 href="{{ url_for('panier.index') }}"
+                 aria-label="Panier ({{ panier_count or 0 }} article{% if (panier_count or 0) > 1 %}s{% endif %})">
+                <span aria-hidden="true">🛒</span> Panier (<span id="compteur-panier">{{ panier_count or 0 }}</span>)
               </a>
             </li>
 

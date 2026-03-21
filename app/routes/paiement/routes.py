@@ -136,6 +136,9 @@ def create_checkout_session():
         if current_user.is_authenticated:
             metadata["user_id"] = str(current_user.user_id)
 
+        # Pré-remplir l'email si le client est connecté
+        customer_email = current_user.email if current_user.is_authenticated else None
+
         stripe_session = stripe.checkout.Session.create(
             payment_method_types=["card"],
             line_items=line_items,
@@ -143,6 +146,8 @@ def create_checkout_session():
             success_url=f"{base_url}/paiement/success?session_id={{CHECKOUT_SESSION_ID}}",
             cancel_url=f"{base_url}/paiement/cancel",
             metadata=metadata,
+            **({"customer_email": customer_email} if customer_email else {}),
+            invoice_creation={"enabled": True},
         )
 
         # 🔗 Lier commande ↔ Stripe session (une seule fois)

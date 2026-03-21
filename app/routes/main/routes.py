@@ -1,7 +1,6 @@
-from flask import Blueprint, render_template, Response
+from flask import Blueprint, render_template, Response, request, flash, redirect, url_for
 from app.utils.panier_tools import get_compteur_panier
-
-TEMPLATE_ACCUEIL = "construction.html"  # deviendra "accueil.html" plus tard
+from app.models.vin import Vin
 
 # Création du Blueprint principal
 main_bp = Blueprint('main', __name__)
@@ -9,7 +8,19 @@ main_bp = Blueprint('main', __name__)
 @main_bp.route('/')
 def index():
     compteur = get_compteur_panier()
-    return render_template(TEMPLATE_ACCUEIL, compteur=compteur)
+    vin_vedette = (
+        Vin.query
+        .filter(Vin.is_active == True, Vin.stock > 0)
+        .order_by(Vin.prix.desc())
+        .first()
+    )
+    return render_template('accueil.html', compteur=compteur, vin_vedette=vin_vedette)
+
+@main_bp.route('/newsletter', methods=['POST'])
+def newsletter():
+    # V1 : enregistrement à implémenter — on confirme la réception
+    flash("Merci ! Vous serez parmi les premiers informés des prochaines arrivées.", "success")
+    return redirect(url_for('main.index'))
 
 
 # ---------------------------

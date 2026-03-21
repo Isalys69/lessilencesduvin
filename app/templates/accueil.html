@@ -1,0 +1,436 @@
+{% extends "base.html" %}
+
+{% block main_class %}{% endblock %}
+
+{% block styles %}
+<style>
+  /* ── Palette ─────────────────────────────────────── */
+  :root {
+    --noir:    #1a1008;
+    --terre:   #8b3a1a;
+    --or:      #c9a84c;
+    --sauge:   #7a8c6e;
+    --creme:   #f6f1ec;
+    --brun:    #3b2c26;
+  }
+
+  /* ── Typographie titres ─────────────────────────── */
+  .titre-section {
+    font-family: Georgia, serif;
+    letter-spacing: 0.03em;
+  }
+
+  /* ── Hero ────────────────────────────────────────── */
+  .hero-accueil {
+    min-height: 92vh;
+    background: linear-gradient(135deg, var(--noir) 0%, #2e1207 60%, #4a1e08 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-accueil::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 70% 40%, rgba(201,168,76,0.08) 0%, transparent 65%);
+  }
+  .hero-cta {
+    border: 1.5px solid var(--or);
+    color: var(--or);
+    background: transparent;
+    padding: 0.9rem 2.4rem;
+    font-size: 1rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+  }
+  .hero-cta:hover {
+    background: var(--or);
+    color: var(--noir);
+  }
+
+  /* ── Section générique ───────────────────────────── */
+  .section-claire  { background: var(--creme); }
+  .section-sombre  { background: var(--noir); color: #e8ddd0; }
+  .section-neutre  { background: #ede7e0; }
+
+  /* ── Piliers philosophie ─────────────────────────── */
+  .pilier-card {
+    border: none;
+    background: transparent;
+    border-top: 2px solid var(--or);
+    border-radius: 0;
+    padding: 2rem 1.5rem;
+  }
+  .pilier-icon {
+    font-size: 2rem;
+    color: var(--or);
+    margin-bottom: 1rem;
+    display: block;
+  }
+
+  /* ── Grille vignerons ────────────────────────────── */
+  .vigneron-card {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 3/4;
+  }
+  .vigneron-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(30%);
+    transition: transform 0.5s ease, filter 0.5s ease;
+  }
+  .vigneron-card:hover img {
+    transform: scale(1.04);
+    filter: grayscale(0%);
+  }
+  .vigneron-overlay {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: linear-gradient(transparent, rgba(26,16,8,0.85));
+    padding: 2rem 1.2rem 1.2rem;
+    color: #f0e8da;
+  }
+
+  /* ── Coup de cœur ────────────────────────────────── */
+  .badge-edition {
+    background: var(--terre);
+    color: #fff;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.4em 1em;
+  }
+  .stock-bar {
+    height: 4px;
+    background: #ddd;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .stock-bar-fill {
+    height: 100%;
+    background: var(--terre);
+    border-radius: 2px;
+  }
+  .btn-saisir {
+    background: var(--terre);
+    color: #fff;
+    border: none;
+    padding: 0.85rem 2.5rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    transition: background 0.25s;
+    text-decoration: none;
+    display: inline-block;
+  }
+  .btn-saisir:hover { background: #a34520; color: #fff; }
+
+  /* ── Expérience client ───────────────────────────── */
+  .exp-icon {
+    font-size: 2.2rem;
+    color: var(--or);
+    margin-bottom: 0.8rem;
+  }
+
+  /* ── Citation ────────────────────────────────────── */
+  .citation blockquote {
+    font-family: Georgia, serif;
+    font-size: 1.4rem;
+    font-style: italic;
+    max-width: 700px;
+    margin: 0 auto;
+    line-height: 1.7;
+    color: var(--brun);
+    text-align: center;
+  }
+  .citation blockquote::before { content: '\201C'; font-size: 3rem; color: var(--or); line-height: 0; vertical-align: -0.6em; margin-right: 0.1em; }
+  .citation blockquote::after  { content: '\201D'; font-size: 3rem; color: var(--or); line-height: 0; vertical-align: -0.6em; margin-left: 0.1em; }
+
+  /* ── Newsletter sombre ───────────────────────────── */
+  .newsletter-input {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(201,168,76,0.4);
+    color: #f0e8da;
+    padding: 0.8rem 1.2rem;
+    border-radius: 0;
+    min-width: 260px;
+  }
+  .newsletter-input::placeholder { color: rgba(240,232,218,0.5); }
+  .newsletter-input:focus {
+    background: rgba(255,255,255,0.12);
+    border-color: var(--or);
+    color: #f0e8da;
+    box-shadow: none;
+    outline: none;
+  }
+  .btn-newsletter {
+    background: var(--or);
+    color: var(--noir);
+    border: none;
+    padding: 0.8rem 1.8rem;
+    border-radius: 0;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    transition: background 0.2s;
+  }
+  .btn-newsletter:hover { background: #b8962e; color: var(--noir); }
+
+  /* ── Overrides typographie globale pour cette page ── */
+  .accueil-page p { text-align: left; max-width: none; }
+  .accueil-page h2 { text-align: left; }
+  .section-centre p, .section-centre h2 { text-align: center; }
+
+  /* ── Responsive hero titre ───────────────────────── */
+  @media (max-width: 600px) {
+    .hero-titre { white-space: normal !important; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="accueil-page">
+
+  <!-- ════════════════════════════════════════════════ -->
+  <!-- 1. HERO                                         -->
+  <!-- ════════════════════════════════════════════════ -->
+  <section class="hero-accueil">
+    <div class="position-relative px-3" style="max-width:720px; z-index:1;">
+      <p class="text-uppercase mb-3" style="color:var(--or); letter-spacing:0.2em; font-size:0.8rem;">Cave en ligne — Vins confidentiels</p>
+      <h1 class="titre-section hero-titre fw-bold mb-4" style="color:#f0e8da; font-size:clamp(1.8rem,3.8vw,2.8rem); text-align:center; white-space:nowrap;">
+        L'audace de la rareté.
+      </h1>
+      <p class="mb-5 mx-auto" style="color:rgba(240,232,218,0.75); font-size:1.1rem; max-width:480px; text-align:justify; line-height:1.7;">
+        Découvrez une sélection exclusive de vins issus de domaines confidentiels, élaborés en quantités infimes pour les collectionneurs et les palais exigeants.
+      </p>
+      <a href="{{ url_for('catalogue.index') }}" class="hero-cta">Découvrir la sélection confidentielle</a>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════ -->
+  <!-- 2. PHILOSOPHIE                                   -->
+  <!-- ════════════════════════════════════════════════ -->
+  <section class="section-claire py-6 section-centre">
+    <div class="container py-5">
+      <p class="text-uppercase mb-2" style="color:var(--or); letter-spacing:0.2em; font-size:0.8rem; text-align:center;">Notre approche</p>
+      <h2 class="titre-section mb-5" style="text-align:center;">L'exception n'est pas un accident,<br>c'est une exigence.</h2>
+      <div class="row g-4">
+        <div class="col-md-4">
+          <div class="pilier-card text-center">
+            <span class="pilier-icon"><i class="bi bi-flower1"></i></span>
+            <h5 class="fw-bold mb-3" style="font-family:Georgia,serif;">Cépages iconoclastes</h5>
+            <p style="color:#6b5a52; font-size:0.95rem; text-align:center; max-width:none;">
+              Là où la tradition attend du Cabernet, nous vous proposons du Savagnin ou du Nero d'Avola. Des cépages atypiques qui réécrivent les codes géographiques pour une expression unique.
+            </p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="pilier-card text-center">
+            <span class="pilier-icon"><i class="bi bi-map"></i></span>
+            <h5 class="fw-bold mb-3" style="font-family:Georgia,serif;">Terroir réinventé</h5>
+            <p style="color:#6b5a52; font-size:0.95rem; text-align:center; max-width:none;">
+              Ces vins ne racontent pas seulement une parcelle cadastrée ; ils expriment la patte singulière d'un artisan qui ose sublimer son sol sans contraintes d'appellation standardisée.
+            </p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="pilier-card text-center">
+            <span class="pilier-icon"><i class="bi bi-gem"></i></span>
+            <h5 class="fw-bold mb-3" style="font-family:Georgia,serif;">Quantité négligeable, qualité absolue</h5>
+            <p style="color:#6b5a52; font-size:0.95rem; text-align:center; max-width:none;">
+              De la taille de la vigne à la mise en bouteille, chaque geste est pensé pour la profondeur, non pour le rendement. Des millésimes souvent comptés en centaines, jamais en milliers.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════ -->
+  <!-- 3. VIGNERONS CONFIDENTIELS                       -->
+  <!-- ════════════════════════════════════════════════ -->
+  <section class="section-neutre py-5">
+    <div class="container py-4">
+      <p class="text-uppercase mb-2" style="color:var(--terre); letter-spacing:0.2em; font-size:0.8rem; text-align:center;">Les artisans</p>
+      <h2 class="titre-section mb-3" style="text-align:center;">Ces vignerons que personne ne connaît</h2>
+      <p class="mb-5" style="text-align:center; color:#6b5a52; max-width:600px; margin-left:auto; margin-right:auto;">
+        Loin des grands crus médiatiques, nous chassons les talents discrets — des paysans-vignerons qui travaillent la vigne comme on tisse une dentelle.
+      </p>
+      <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+          <div class="vigneron-card">
+            <img src="{{ url_for('static', filename='img/vins/arpents_resilience_2021.jpg') }}" alt="Domaine artisan">
+            <div class="vigneron-overlay">
+              <p class="mb-0 fw-semibold" style="font-size:0.9rem; text-align:left; max-width:none; color:#f0e8da;">Les Arpents du Soleil</p>
+              <small style="color:rgba(240,232,218,0.7);">Alsace</small>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="vigneron-card">
+            <img src="{{ url_for('static', filename='img/vins/arpents_pinot-noir_2020.jpg') }}" alt="Cave centenaire">
+            <div class="vigneron-overlay">
+              <p class="mb-0 fw-semibold" style="font-size:0.9rem; text-align:left; max-width:none; color:#f0e8da;">Caves familiales</p>
+              <small style="color:rgba(240,232,218,0.7);">Tradition séculaire</small>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="vigneron-card">
+            <img src="{{ url_for('static', filename='img/vins/arpents_connivence_2020.jpg') }}" alt="Viticulture artisanale">
+            <div class="vigneron-overlay">
+              <p class="mb-0 fw-semibold" style="font-size:0.9rem; text-align:left; max-width:none; color:#f0e8da;">Geste & patience</p>
+              <small style="color:rgba(240,232,218,0.7);">Viticulture raisonnée</small>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="vigneron-card">
+            <img src="{{ url_for('static', filename='img/vins/arpents_auxerrois_2019.jpg') }}" alt="Terroir exceptionnel">
+            <div class="vigneron-overlay">
+              <p class="mb-0 fw-semibold" style="font-size:0.9rem; text-align:left; max-width:none; color:#f0e8da;">Géologie improbable</p>
+              <small style="color:rgba(240,232,218,0.7);">Terroir d'exception</small>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="text-center">
+        <a href="{{ url_for('catalogue.index') }}" style="color:var(--terre); text-decoration:none; font-size:0.95rem; letter-spacing:0.05em;">
+          Voir toute la sélection <i class="bi bi-arrow-right ms-1"></i>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════ -->
+  <!-- 4. COUP DE CŒUR                                  -->
+  <!-- ════════════════════════════════════════════════ -->
+  {% if vin_vedette %}
+  <section class="section-claire py-5">
+    <div class="container py-4">
+      <p class="text-uppercase mb-2" style="color:var(--or); letter-spacing:0.2em; font-size:0.8rem; text-align:center;">Coup de cœur</p>
+      <h2 class="titre-section mb-5" style="text-align:center;">La Cuvée du Moment</h2>
+      <div class="row align-items-center g-5">
+        <div class="col-md-5 text-center">
+          {% if vin_vedette.photo %}
+          <img src="{{ url_for('static', filename='img/vins/' ~ vin_vedette.photo) }}"
+               alt="{{ vin_vedette.nom }}"
+               class="img-fluid"
+               style="max-height:420px; object-fit:contain; filter:drop-shadow(0 8px 24px rgba(0,0,0,0.18));">
+          {% else %}
+          <div style="height:300px; background:var(--creme); display:flex; align-items:center; justify-content:center;">
+            <i class="bi bi-award" style="font-size:4rem; color:var(--or);"></i>
+          </div>
+          {% endif %}
+        </div>
+        <div class="col-md-7">
+          <span class="badge badge-edition mb-3">Édition limitée</span>
+          <h3 class="titre-section fw-bold mb-1" style="font-size:1.8rem;">{{ vin_vedette.nom }}</h3>
+          {% if vin_vedette.domaine %}<p class="mb-2" style="color:var(--terre); font-size:0.95rem;">Domaine {{ vin_vedette.domaine.nom }}</p>{% endif %}
+          {% if vin_vedette.description %}
+          <p class="mb-4" style="color:#6b5a52; line-height:1.7; font-size:0.95rem;">{{ vin_vedette.description }}</p>
+          {% endif %}
+          <div class="d-flex align-items-baseline gap-3 mb-3">
+            <span class="fw-bold" style="font-size:1.8rem; font-family:Georgia,serif;">{{ "%.2f"|format(vin_vedette.prix) }} €</span>
+            <span style="color:#999; font-size:0.85rem;">TTC</span>
+          </div>
+          {% if vin_vedette.stock <= 20 %}
+          <div class="mb-4">
+            <div class="d-flex justify-content-between mb-1">
+              <small style="color:var(--terre);">Stock restant : {{ vin_vedette.stock }} bouteilles</small>
+            </div>
+            <div class="stock-bar">
+              <div class="stock-bar-fill" style="width:{{ [vin_vedette.stock * 5, 100]|min }}%;"></div>
+            </div>
+          </div>
+          {% endif %}
+          <a href="{{ url_for('catalogue.index') }}" class="btn-saisir">Saisir cette rareté</a>
+        </div>
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- ════════════════════════════════════════════════ -->
+  <!-- 5. EXPÉRIENCE CLIENT                             -->
+  <!-- ════════════════════════════════════════════════ -->
+  <section class="section-sombre py-5 section-centre">
+    <div class="container py-4">
+      <p class="text-uppercase mb-2" style="color:var(--or); letter-spacing:0.2em; font-size:0.8rem; text-align:center;">Notre promesse</p>
+      <h2 class="titre-section mb-5" style="color:#f0e8da; text-align:center;">Un service à la hauteur de la rareté.</h2>
+      <div class="row g-4 text-center">
+        <div class="col-md-4">
+          <span class="exp-icon d-block"><i class="bi bi-box2-heart"></i></span>
+          <h6 class="fw-bold mb-2" style="color:#f0e8da; font-family:Georgia,serif;">Emballage sur-mesure</h6>
+          <p style="color:rgba(240,232,218,0.7); font-size:0.9rem; max-width:240px; margin:0 auto; text-align:center;">
+            Écrin de protection conçu pour les bouteilles de prestige. Emballage spécialisé inclus.
+          </p>
+        </div>
+        <div class="col-md-4">
+          <span class="exp-icon d-block"><i class="bi bi-bell"></i></span>
+          <h6 class="fw-bold mb-2" style="color:#f0e8da; font-family:Georgia,serif;">Accès privilège</h6>
+          <p style="color:rgba(240,232,218,0.7); font-size:0.9rem; max-width:240px; margin:0 auto; text-align:center;">
+            En tant que client, recevez des préventes sur les futures parcelles confidentielles avant leur sortie publique.
+          </p>
+        </div>
+        <div class="col-md-4">
+          <span class="exp-icon d-block"><i class="bi bi-chat-quote"></i></span>
+          <h6 class="fw-bold mb-2" style="color:#f0e8da; font-family:Georgia,serif;">Conseil personnalisé</h6>
+          <p style="color:rgba(240,232,218,0.7); font-size:0.9rem; max-width:240px; margin:0 auto; text-align:center;">
+            Une approche passionnée à votre écoute pour accorder ces pépites avec votre table ou enrichir votre cave.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════ -->
+  <!-- 6. CITATION                                      -->
+  <!-- ════════════════════════════════════════════════ -->
+  <section class="section-neutre py-5 citation section-centre">
+    <div class="container py-4">
+      <blockquote>
+        Enfin une cave qui oublie les notes de dégustation pompeuses pour se concentrer sur l'histoire du sol et le geste rare. Chaque bouteille est une découverte.
+      </blockquote>
+      <p class="mt-4" style="color:#999; font-size:0.85rem; text-align:center; max-width:none;">— Philippe D., collectionneur</p>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════ -->
+  <!-- 7. CTA FINAL + NEWSLETTER                        -->
+  <!-- ════════════════════════════════════════════════ -->
+  <section class="section-sombre py-5 section-centre">
+    <div class="container py-4">
+      <h2 class="titre-section mb-3" style="color:#f0e8da; text-align:center;">
+        N'attendez pas la généralisation.<br>
+        <span style="color:var(--or);">La prochaine cuvée sera peut-être la dernière.</span>
+      </h2>
+      <p class="mb-5" style="color:rgba(240,232,218,0.65); text-align:center; max-width:500px; margin-left:auto; margin-right:auto;">
+        Soyez averti en avant-première des prochaines mises en ligne, limitées à quelques heures.
+      </p>
+
+      <div class="mb-5 text-center">
+        <a href="{{ url_for('catalogue.index') }}" class="hero-cta">Accéder à la boutique confidentielle</a>
+      </div>
+
+      <hr style="border-color:rgba(255,255,255,0.1); max-width:400px; margin:0 auto 2.5rem;">
+
+      <form action="{{ url_for('main.newsletter') }}" method="POST" class="d-flex flex-wrap justify-content-center gap-0">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="email" name="email" class="newsletter-input form-control" placeholder="Votre adresse email" required>
+        <button type="submit" class="btn-newsletter">S'inscrire</button>
+      </form>
+      <p class="mt-3" style="color:rgba(240,232,218,0.4); font-size:0.75rem; text-align:center; max-width:none;">Aucun spam. Désabonnement en un clic.</p>
+    </div>
+  </section>
+
+</div>
+{% endblock %}

@@ -187,7 +187,7 @@
   </header>
 
   <!-- Contenu des pages -->
-  <main class="container my-4">
+  <main class="{% block main_class %}container my-4{% endblock %}">
     {% block content %}{% endblock %}
   </main>
 

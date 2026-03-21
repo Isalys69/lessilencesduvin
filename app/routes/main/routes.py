@@ -18,9 +18,20 @@ def index():
 
 @main_bp.route('/newsletter', methods=['POST'])
 def newsletter():
-    # V1 : enregistrement à implémenter — on confirme la réception
     flash("Merci ! Vous serez parmi les premiers informés des prochaines arrivées.", "success")
     return redirect(url_for('main.index'))
+
+@main_bp.route('/vins-confidentiels-rares')
+def vins_confidentiels_rares():
+    compteur = get_compteur_panier()
+    vins_vedettes = (
+        Vin.query
+        .filter(Vin.is_active == True, Vin.stock > 0)
+        .order_by(Vin.prix.desc())
+        .limit(3)
+        .all()
+    )
+    return render_template('vins_confidentiels_rares.html', compteur=compteur, vins_vedettes=vins_vedettes)
 
 
 # ---------------------------
@@ -56,6 +67,10 @@ def sitemap():
   <url>
     <loc>https://www.lessilencesduvin.fr/contact</loc>
     <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.lessilencesduvin.fr/vins-confidentiels-rares</loc>
+    <priority>0.9</priority>
   </url>
 </urlset>"""
     return Response(xml, mimetype='application/xml')

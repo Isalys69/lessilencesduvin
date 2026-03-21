@@ -17,14 +17,10 @@ function validateAge(isAdult) {
 window.onload = function() {
     const hasVerifiedAge = document.cookie.includes("age_verified=true");
 
-    if (!hasVerifiedAge) {
-        // 🔒 Affiche le Age Gate → bloque l’accès
-        document.getElementById("age-gate").style.display = "block";
-
-        // 🚫 Cache le bandeau cookie tant que l’âge n’est pas validé
-        document.getElementById("cookie-banner").style.display = "none";
-    } else {
-        // ✅ Affiche le bandeau cookie normal
+    if (hasVerifiedAge) {
+        // ✅ Cache l’age gate et affiche le bandeau cookie
+        document.getElementById("age-gate").style.display = "none";
         document.getElementById("cookie-banner").style.display = "block";
     }
+    // Sinon : age gate reste visible (display:block par défaut dans le HTML)
 };
